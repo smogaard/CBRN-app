@@ -235,7 +235,7 @@ async function loadTile(type, lat, lng){
 
   if (loadedTiles[key]) return;
 
-  const filename = `${type}_tiles/${type}_tiles_id_${id}.geojson`;
+  const filename = `${type}_tiles/${type}_tile_id_${id}.geojson`;
 
   try{
     const res = await fetch(filename);
