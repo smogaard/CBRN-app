@@ -220,9 +220,15 @@ function findTileId(lat, lng){
 
 async function loadTile(type, lat, lng){
 
-  if (!gridLayer) return;
+  
+  if (!gridLayer) {
+    console.warn("Grid ikke lastet enda");
+    return;
+  }
+
 
   const id = findTileId(lat, lng);
+																					console.log("Tile ID:", id);
   if (!id) return;
 
   const key = `${type}_${id}`;
@@ -252,7 +258,6 @@ async function loadTile(type, lat, lng){
   } catch(e){
     console.warn("Manglende tile:", filename);
   }
-																				console.log("Tile ID:", id);
 }
 
 	
