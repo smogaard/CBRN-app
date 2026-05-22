@@ -236,7 +236,7 @@ async function loadTile(type, lat, lng){
   if (loadedTiles[key]) return;
 
   const filename = `${type}_tiles/${type}_tile_id_${id}.geojson`;
-
+																					console.log("Prøver å laste:", filename);
   try{
     const res = await fetch(filename);
     const data = await res.json();
