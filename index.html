@@ -169,6 +169,7 @@ let forecastHours = 1;
 let t0WindDir = 0;
 let t0data;
 let loadedTiles = {};
+let gridLayer;
 	
 const SNAP_DIST = 0.001;
 
@@ -176,36 +177,85 @@ const SNAP_DIST = 0.001;
 // ELVIS TILES
 // =============================
 
-function getTileId(lat, lng){
-  const x = Math.floor(lng * 5);
-  const y = Math.floor(lat * 5);
-  return `${x}_${y}`;
+
+
+async function loadGrid(){
+  const res = await fetch("grid.geojson");
+  const data = await res.json();
+  gridLayer = data;
 }
 
-async function loadElvisTile(lat, lng){
+loadGrid();
+	
+function findTileId(lat, lng){
 
-  const id = getTileId(lat, lng);
+  for (let feature of gridLayer.features){
 
-  if (loadedTiles[id]) return;
+    const coords = feature.geometry.coordinates[0];
 
-  const filename = `elvis_tiles/id_${id}.geojson`;
+    let inside = false;
+
+    for (let i = 0, j = coords.length - 1; i < coords.length; j = i++){
+
+      const xi = coords[i][1];
+      const yi = coords[i][0];
+      const xj = coords[j][1];
+      const yj = coords[j][0];
+
+      const intersect =
+        ((yi > lng) !== (yj > lng)) &&
+        (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi);
+
+      if (intersect) inside = !inside;
+    }
+
+    if (inside){
+      return feature.properties.tile_id;
+    }
+  }
+
+  return null;
+}	
+
+
+async function loadTile(type, lat, lng){
+
+  if (!gridLayer) return;
+
+  const id = findTileId(lat, lng);
+  if (!id) return;
+
+  const key = `${type}_${id}`;
+
+  if (loadedTiles[key]) return;
+
+  const filename = `${type}_tiles/${type}_tiles_id_${id}.geojson`;
 
   try{
     const res = await fetch(filename);
     const data = await res.json();
 
-    loadedTiles[id] = data;
+    loadedTiles[key] = data;
 
-    console.log("Loaded tile:", filename);
+    console.log("Loaded:", filename);
 
-    // 👇 (valgfritt: vis elver visuelt)
-    L.geoJSON(data, { color:"#00ffff", weight:1 }).addTo(map);
+    // 🔵 ELVIS (linjer)
+    if(type === "elvis"){
+      L.geoJSON(data, { color:"#00ffff", weight:1 }).addTo(map);
+    }
+
+    // 🟡 INNSJØ (flater)
+    if(type === "innsjo"){
+      L.geoJSON(data, { color:"#3399ff", weight:1, fillOpacity:0.2 }).addTo(map);
+    }
 
   } catch(e){
     console.warn("Manglende tile:", filename);
   }
+																				console.log("Tile ID:", id);
 }
 
+	
 
 /* =============================
 2 ICON
@@ -636,11 +686,20 @@ function placeIncident(pos){
 
 // Hent riktig tile med vassdragsinformasjon
 
-loadElvisTile(pos.lat, pos.lng);
-loadElvisTile(pos.lat + 0.2, pos.lng);
-loadElvisTile(pos.lat - 0.2, pos.lng);
-loadElvisTile(pos.lat, pos.lng + 0.2);
-loadElvisTile(pos.lat, pos.lng - 0.2);
+
+const points = [
+  [pos.lat, pos.lng],
+  [pos.lat + 0.2, pos.lng],
+  [pos.lat - 0.2, pos.lng],
+  [pos.lat, pos.lng + 0.2],
+  [pos.lat, pos.lng - 0.2]
+];
+
+for (let p of points){
+  loadTile("elvis", p[0], p[1]);
+  loadTile("innsjo", p[0], p[1]);
+}
+
 
 	
  marker && map.removeLayer(marker);
