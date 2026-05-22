@@ -1,0 +1,12 @@
+{
+"type": "FeatureCollection",
+"name": "elvis_tile_id_656",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"xy_coordinate_resolution": 1e-15,
+"features": [
+{ "type": "Feature", "properties": { "fid": 194592, "elvelengde_m": 274.51, "elvID": "158-158-1", "elvenavn": null, "regulert": null, "fid_2": 656, "id": 656, "left": 11.986919847, "top": 66.946110046000001, "right": 12.486919847, "bottom": 66.446110046000001, "row_index": 15, "col_index": 16, "tile_id": 656 }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 12.091067090625456, 66.504432680916196 ], [ 12.089399360676499, 66.504463339412425 ], [ 12.089485032311803, 66.504608147401427 ], [ 12.089433653497082, 66.504830317362178 ], [ 12.089863960901162, 66.505112181223566 ], [ 12.090132298566594, 66.50545944982396 ], [ 12.089150119137017, 66.505643379336206 ], [ 12.088457071937674, 66.505619075838268 ] ] ] } },
+{ "type": "Feature", "properties": { "fid": 196533, "elvelengde_m": 80.34, "elvID": "158-158-1", "elvenavn": null, "regulert": null, "fid_2": 656, "id": 656, "left": 11.986919847, "top": 66.946110046000001, "right": 12.486919847, "bottom": 66.446110046000001, "row_index": 15, "col_index": 16, "tile_id": 656 }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 12.088487028622906, 66.505869043639663 ], [ 12.088843674058507, 66.506040995542079 ], [ 12.089785797943932, 66.506120881604872 ], [ 12.08993119982973, 66.5062108529266 ] ] ] } },
+{ "type": "Feature", "properties": { "fid": 196542, "elvelengde_m": 11.09, "elvID": "158-158-1", "elvenavn": null, "regulert": null, "fid_2": 656, "id": 656, "left": 11.986919847, "top": 66.946110046000001, "right": 12.486919847, "bottom": 66.446110046000001, "row_index": 15, "col_index": 16, "tile_id": 656 }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 12.088416716181458, 66.505774420465755 ], [ 12.088487028622906, 66.505869043639663 ] ] ] } },
+{ "type": "Feature", "properties": { "fid": 196649, "elvelengde_m": 23.02, "elvID": "158-158-1", "elvenavn": null, "regulert": null, "fid_2": 656, "id": 656, "left": 11.986919847, "top": 66.946110046000001, "right": 12.486919847, "bottom": 66.446110046000001, "row_index": 15, "col_index": 16, "tile_id": 656 }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 12.088457071937674, 66.505619075838268 ], [ 12.088266647582442, 66.505711045193635 ], [ 12.088416716181458, 66.505774420465755 ] ] ] } }
+]
+}

@@ -1,0 +1,11 @@
+{
+"type": "FeatureCollection",
+"name": "elvis_tile_id_302",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"xy_coordinate_resolution": 1e-15,
+"features": [
+{ "type": "Feature", "properties": { "fid": 370646, "elvelengde_m": 44.73, "elvID": "115-83-1", "elvenavn": null, "regulert": null, "fid_2": 302, "id": 302, "left": 7.486919847, "top": 63.946110046000001, "right": 7.986919847, "bottom": 63.446110046000001, "row_index": 21, "col_index": 7, "tile_id": 302 }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 7.979033806985504, 63.449593271983318 ], [ 7.979069868516994, 63.449710268366537 ], [ 7.979411788386727, 63.449948007737213 ] ] ] } },
+{ "type": "Feature", "properties": { "fid": 370658, "elvelengde_m": 592.42, "elvID": "115-82-1", "elvenavn": null, "regulert": null, "fid_2": 302, "id": 302, "left": 7.486919847, "top": 63.946110046000001, "right": 7.986919847, "bottom": 63.446110046000001, "row_index": 21, "col_index": 7, "tile_id": 302 }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 7.959774250350674, 63.446110046 ], [ 7.959162800432756, 63.446227897437332 ], [ 7.956968950167604, 63.447010771272645 ], [ 7.955107456224392, 63.447289039476019 ] ] ] } },
+{ "type": "Feature", "properties": { "fid": 377515, "elvelengde_m": 248.14, "elvID": "115-83-1", "elvenavn": null, "regulert": null, "fid_2": 302, "id": 302, "left": 7.486919847, "top": 63.946110046000001, "right": 7.986919847, "bottom": 63.446110046000001, "row_index": 21, "col_index": 7, "tile_id": 302 }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 7.981032264376442, 63.448453808833364 ], [ 7.979045839838646, 63.448395145357644 ], [ 7.978408687466102, 63.449048860853445 ], [ 7.979033806985504, 63.449593271983318 ] ] ] } }
+]
+}
