@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"name": "innsjo_tile_id_1967",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"xy_coordinate_resolution": 1e-15,
+"features": [
+{ "type": "Feature", "properties": { "fid": 260460, "navn": null, "hoyde_moh": 257, "arealInnsjo_km2": 0.0077, "magasinKategori": null, "fid_2": 1967, "id": 1967, "left": 28.486919847, "top": 71.446110046000001, "right": 28.986919847, "bottom": 70.946110046000001, "row_index": 6, "col_index": 49, "tile_id": 1967 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ 28.506795545368451, 70.946749760687752 ], [ 28.504745027236066, 70.946381117341332 ], [ 28.503711665589218, 70.947046950543097 ], [ 28.504308626509545, 70.947252592137446 ], [ 28.505759547619828, 70.947323302689213 ], [ 28.506795545368451, 70.946749760687752 ] ] ] ] } }
+]
+}
