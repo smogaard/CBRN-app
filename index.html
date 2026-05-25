@@ -1501,12 +1501,17 @@ function followFullRiver(startPoint){
         }
       }
 
-      if (foundSegment) 														console.log("Ingen videre segment");
+      if (foundSegment) {
 		break;
     }
   }
 }      
-      
+
+		 
+ if (!foundSegment){
+  console.log("Ingen videre segment");
+  break;
+}     
 
     // ✅ følg resten av segmentet
     for (let j = foundIndex; j < foundCoords.length; j++){
