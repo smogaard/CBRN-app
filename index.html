@@ -1721,6 +1721,7 @@ async function createFlowLayer(pos){
       lng: start.lng
     };
 	let onRiver = false;
+	let riverVisited = new Set();
 
     const path = [];
     const visited = new Set();
@@ -1730,15 +1731,15 @@ async function createFlowLayer(pos){
 
   	const key = current.lat.toFixed(5)+","+current.lng.toFixed(5);
   	
+
 	if (visited.has(key)){
-	  if (onRiver) {
-	    // ✅ tillat fortsatt bevegelse på elv
-	  } else {
+	  if (!onRiver){
 	    continue;
 	  }
 	}
 
 	visited.add(key);
+
 
   	path.push([current.lat, current.lng]);
 	
