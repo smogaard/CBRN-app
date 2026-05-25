@@ -1652,46 +1652,44 @@ async function createFlowLayer(pos){
 
 	if (stream){
 
- 	 const distHere = distMeters(current, stream);
+  		const distHere = distMeters(current, stream);
 
-  		// ✅ NYTT: sjekk også litt fremover
- 	 const nextTest = await getSteepestDirectionDEM(
-    	current.lat,
-    	current.lng,
-    	30
+  		const nextTest = await getSteepestDirectionDEM(
+   		 current.lat,
+   		 current.lng,
+    	 30
   		);
 
-  	 let distNext = Infinity;
+  	let distNext = Infinity;
 
-			
-																	console.log("SNAPPET! dist:", dist);
+  	if (nextTest){
+    	distNext = distMeters(nextTest, stream);
+  	}
 
-			// 🔵 VIS SNAP-PUNKT
-			L.circle([stream[0], stream[1]], {
- 			 radius: 20,
-			 color: "blue"
-			}).addTo(map);
+  	if (distHere < SNAP_DIST || distNext < SNAP_DIST){
 
+    	console.log("SNAPPET! dist:", Math.min(distHere, distNext));
 
-      																console.log("SNAPPET TIL ELVIS");
+    	L.circle([stream[0], stream[1]], {
+      		radius: 20,
+      		color: "blue"
+    	}).addTo(map);
 
-      			// legg inn punktet på elva
-				path.push([stream[0], stream[1]]);
+    	console.log("SNAPPET TIL ELVIS");
 
-				// ✅ NYTT: følg elva videre
-				const riverPath = followFullRiver(stream);
+    	path.push([stream[0], stream[1]]);
 
-				if (riverPath && riverPath.length > 0){
+    	const riverPath = followFullRiver(stream);
 
-  				for (let p of riverPath){
-    				path.push([p[0], p[1], "river"])
-  					}
-				}
+    	if (riverPath && riverPath.length > 0){
+      		for (let p of riverPath){
+        	path.push([p[0], p[1], "river"]);
+      	}
+    }
 
-				// stopp denne flowen etter at den har fulgt elva
-				break;
-			}
-		}
+    break;
+  }
+}
 			
   // ↙️ RESTEN AV DIN KODE SKAL KOMME ETTER DETTE
 
@@ -1796,7 +1794,7 @@ async function createFlowLayer(pos){
         })
       );
     }
-  
+}
 
   return L.layerGroup(layers);
 }	
