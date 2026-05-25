@@ -1315,13 +1315,14 @@ async function loadDEMTile(z, x, y){
   });
 }
 
-
 function findNearestStream(point){
 
   let closest = null;
   let bestDist = Infinity;
 
   for (let key in loadedTiles){
+
+    if (!key.startsWith("elvis")) continue;
 
     const data = loadedTiles[key];
     if (!data) continue;
@@ -1330,16 +1331,16 @@ function findNearestStream(point){
 
       const coords = f.geometry.coordinates;
 
-      for (let i = 0; i < coords.length; i++){
+      for (let i = 0; i < coords.length - 1; i++){
 
-        const lat = coords[i][1];
-        const lon = coords[i][0];
+        const p1 = [coords[i][1], coords[i][0]];
+        const p2 = [coords[i+1][1], coords[i+1][0]];
 
-		const dist = distMeters(point, [lat, lon]);
+        const d = distanceToSegment(point, p1, p2);
 
-        if (dist < bestDist){
-          bestDist = dist;
-          closest = [lat, lon];
+        if (d < bestDist){
+          bestDist = d;
+          closest = projectPointToSegment(point, p1, p2);
         }
       }
     }
@@ -1349,6 +1350,52 @@ function findNearestStream(point){
 }
 
 
+
+function distanceToSegment(p, v, w){
+
+  const l2 =
+    Math.pow(v[0]-w[0],2) +
+    Math.pow(v[1]-w[1],2);
+
+  if (l2 === 0) return distMeters(p, v);
+
+  let t =
+    ((p.lat - v[0])*(w[0]-v[0]) +
+     (p.lng - v[1])*(w[1]-v[1])) / l2;
+
+  t = Math.max(0, Math.min(1, t));
+
+  const proj = [
+    v[0] + t*(w[0]-v[0]),
+    v[1] + t*(w[1]-v[1])
+  ];
+
+  return distMeters(p, proj);
+}
+
+
+
+function projectPointToSegment(p, v, w){
+
+  const l2 =
+    Math.pow(v[0]-w[0],2) +
+    Math.pow(v[1]-w[1],2);
+
+  if (l2 === 0) return v;
+
+  let t =
+    ((p.lat - v[0])*(w[0]-v[0]) +
+     (p.lng - v[1])*(w[1]-v[1])) / l2;
+
+  t = Math.max(0, Math.min(1, t));
+
+  return [
+    v[0] + t*(w[0]-v[0]),
+    v[1] + t*(w[1]-v[1])
+  ];
+}
+	
+	
 	
 	
 function followFullRiver(startPoint){
@@ -1592,8 +1639,6 @@ async function createFlowLayer(pos){
 
   	if (stream){
 
-    	const dx = current.lat - stream[0];
-    	const dy = current.lng - stream[1];
     	const dist = distMeters(current, stream);
 
     	if (dist < SNAP_DIST){
