@@ -1389,15 +1389,7 @@ function findNearestStream(point){
 
   	       for (let i = 0; i < line.length; i++){
 
- 			 const pt = [line[i][1], line[i][0]];
-
- 			 const dist = distMeters(
- 			   {lat: current[0], lng: current[1]},
- 			   pt
- 			 );
-
- 			 // ✅ NY: hopp over samme punkt
- 			 if (dist < 2) continue;
+ 			 
 
             const p1 = [line[i][1], line[i][0]];
             const p2 = [line[i+1][1], line[i+1][0]];
@@ -1497,6 +1489,8 @@ async function getNextDownstreamPoint(current){
             {lat: current[0], lng: current[1]},
             pt
           );
+
+			if(dist <2) continue;
 
           // ✅ kun nærliggende punkter
           if (dist > 80) continue;
