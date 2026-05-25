@@ -1650,6 +1650,11 @@ async function createFlowLayer(pos){
 
 	const stream = findNearestStream(current);
 
+		if (stream){
+  			const d = distMeters(current, stream);
+  																	console.log("Dist til nærmeste elv:", d);
+		}
+
 	if (stream){
 
   		const distHere = distMeters(current, stream);
