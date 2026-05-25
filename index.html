@@ -1720,6 +1720,7 @@ async function createFlowLayer(pos){
       lat: start.lat,
       lng: start.lng
     };
+	let onRiver = false;
 
     const path = [];
     const visited = new Set();
@@ -1749,52 +1750,50 @@ async function createFlowLayer(pos){
 
 	if (stream){
 
-  		const distHere = distMeters(current, stream);
+  const distHere = distMeters(current, stream);
 
-  		const nextTest = await getSteepestDirectionDEM(
-   		 current.lat,
-   		 current.lng,
-    	 30
-  		);
+  if (!onRiver && distHere < SNAP_DIST){
 
-  	let distNext = Infinity;
+    console.log("SNAPPET!");
 
-  	if (nextTest){
-    	distNext = distMeters(nextTest, stream);
-  	}
+    current = {
+      lat: stream[0],
+      lng: stream[1]
+    };
 
-  	if (distHere < SNAP_DIST){
+    path.push([current.lat, current.lng, "river"]);
 
-    	console.log("SNAPPET! dist:", Math.min(distHere, distNext));
+    onRiver = true;
 
-    	L.circle([stream[0], stream[1]], {
-      		radius: 20,
-      		color: "blue"
-    	}).addTo(map);
-
-    	console.log("SNAPPET TIL ELVIS");
-
-    	path.push([stream[0], stream[1], "river"]);
-
-    	const riverPath = await followFullRiverDEM(stream);
-
-    	if (riverPath && riverPath.length > 0){
-      		for (let p of riverPath){
-        	path.push([p[0], p[1], "river"]);
-      	}
-    }
-
-    
-	current = {
-  	lat: stream[0],
- 	 lng: stream[1]
-	};
-
-	continue;
-
+    continue;
   }
+}	
+
+
+// ✅ Følg elv punkt-for-punkt
+if (onRiver){
+
+  const nextRiver = await getNextDownstreamPoint([current.lat, current.lng]);
+
+  if (!nextRiver){
+    console.log("ELV STOP");
+    break;
+  }
+
+  current = {
+    lat: nextRiver[0],
+    lng: nextRiver[1]
+  };
+
+  path.push([current.lat, current.lng, "river"]);
+
+  continue;
 }
-			
+
+		
+
+
+		
   // ↙️ RESTEN AV DIN KODE SKAL KOMME ETTER DETTE
 
   const next = await getSteepestDirectionDEM(
