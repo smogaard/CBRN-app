@@ -1677,7 +1677,7 @@ async function createFlowLayer(pos){
 
     	console.log("SNAPPET TIL ELVIS");
 
-    	path.push([stream[0], stream[1]]);
+    	path.push([stream[0], stream[1], "river"]);
 
     	const riverPath = followFullRiver(stream);
 
@@ -1755,7 +1755,8 @@ async function createFlowLayer(pos){
       }
     }
 
-	// 🔴 FORCE SNAP kun hvis vi IKKE allerede traff elv
+	  
+// 🔴 FORCE SNAP kun hvis vi IKKE allerede traff elv
 	if (!path.some(p => p[2] === "river") && path.length > 5){
 
   		const lastPoint = path[path.length - 1];
@@ -1794,6 +1795,7 @@ async function createFlowLayer(pos){
         })
       );
     }
+	
 }
 
   return L.layerGroup(layers);
