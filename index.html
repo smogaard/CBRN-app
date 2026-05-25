@@ -1341,9 +1341,49 @@ function findNearestStream(point){
 
     for (let f of data.features){
 
-      const coords = f.geometry.coordinates;
+  const geom = f.geometry;
 
-      for (let i = 0; i < coords.length - 1; i++){
+  if (!geom) continue;
+
+  // ✅ LINESTRING
+  if (geom.type === "LineString"){
+
+    const coords = geom.coordinates;
+
+    for (let i = 0; i < coords.length - 1; i++){
+
+      const p1 = [coords[i][1], coords[i][0]];
+      const p2 = [coords[i+1][1], coords[i+1][0]];
+
+      const d = distanceToSegment(point, p1, p2);
+
+      if (d < bestDist){
+        bestDist = d;
+        closest = projectPointToSegment(point, p1, p2);
+      }
+    }
+  }
+
+  // ✅ MULTILINESTRING
+  if (geom.type === "MultiLineString"){
+
+    for (let line of geom.coordinates){
+
+      for (let i = 0; i < line.length - 1; i++){
+
+        const p1 = [line[i][1], line[i][0]];
+        const p2 = [line[i+1][1], line[i+1][0]];
+
+        const d = distanceToSegment(point, p1, p2);
+
+        if (d < bestDist){
+          bestDist = d;
+          closest = projectPointToSegment(point, p1, p2);
+        }
+      }
+    }
+  }
+}
 
         const p1 = [coords[i][1], coords[i][0]];
         const p2 = [coords[i+1][1], coords[i+1][0]];
