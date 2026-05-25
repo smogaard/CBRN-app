@@ -1489,7 +1489,7 @@ async function getNextDownstreamPoint(current){
           );
 
           // ✅ kun nærliggende punkter
-          if (dist > 50) continue;
+          if (dist > 80) continue;
 
           const elev = await getElevationCached(pt[0], pt[1]);
 
