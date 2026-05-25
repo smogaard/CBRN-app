@@ -171,12 +171,21 @@ let t0data;
 let loadedTiles = {};
 let gridLayer;
 	
-const SNAP_DIST = 0.001;
+const SNAP_DIST = 80;    // distanse i meter
 
 // =============================
 // ELVIS TILES
 // =============================
 
+
+	
+function distMeters(a, b){
+
+  const dx = (a.lat - b[0]) * 111000;
+  const dy = (a.lng - b[1]) * 111000 * Math.cos(a.lat*Math.PI/180);
+
+  return Math.sqrt(dx*dx + dy*dy);
+}
 
 
 async function loadGrid(){
@@ -1326,9 +1335,7 @@ function findNearestStream(point){
         const lat = coords[i][1];
         const lon = coords[i][0];
 
-        const dx = lat - point.lat;
-        const dy = lon - point.lng;
-        const dist = dx*dx + dy*dy;
+		const dist = distMeters(point, [lat, lon]);
 
         if (dist < bestDist){
           bestDist = dist;
@@ -1371,7 +1378,12 @@ function followFullRiver(startPoint){
 
           const dx = coords[i][1] - current[0];
           const dy = coords[i][0] - current[1];
-          const dist = dx*dx + dy*dy;
+       
+			const dist = distMeters(
+  			  { lat: current[0], lng: current[1] },
+			  [coords[i][1], coords[i][0]]
+			);
+
 
           if (dist < SNAP_DIST){
 
@@ -1582,7 +1594,7 @@ async function createFlowLayer(pos){
 
     	const dx = current.lat - stream[0];
     	const dy = current.lng - stream[1];
-    	const dist = dx*dx + dy*dy;
+    	const dist = distMeters(current, stream);
 
     	if (dist < SNAP_DIST){
 			
