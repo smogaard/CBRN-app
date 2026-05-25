@@ -1538,6 +1538,11 @@ if (!best){
             p
           );
 
+			
+		  // ✅ viktig: hold oss lokalt
+ 		  if (d > 80) continue;
+
+
           if (d < bestDist){
             bestDist = d;
             closest = p;
