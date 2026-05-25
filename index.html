@@ -1652,23 +1652,24 @@ async function createFlowLayer(pos){
 			}).addTo(map);
 
 
-      	console.log("SNAPPET TIL ELVIS");
+      																console.log("SNAPPET TIL ELVIS");
 
-      	// legg inn punktet på elva
-		path.push([stream[0], stream[1]]);
+      			// legg inn punktet på elva
+				path.push([stream[0], stream[1]]);
 
-		// ✅ NYTT: følg elva videre
-		const riverPath = followFullRiver(stream);
+				// ✅ NYTT: følg elva videre
+				const riverPath = followFullRiver(stream);
 
-		if (riverPath && riverPath.length > 0){
+				if (riverPath && riverPath.length > 0){
 
-  		for (let p of riverPath){
-    		path.push(p);
-  }
-}
+  				for (let p of riverPath){
+    				path.push(p);
+  					}
+				}
 
-// stopp denne flowen etter at den har fulgt elva
-break;
+				// stopp denne flowen etter at den har fulgt elva
+				break;
+			}
 
 			
   // ↙️ RESTEN AV DIN KODE SKAL KOMME ETTER DETTE
