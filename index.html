@@ -1524,19 +1524,57 @@ function followFullRiver(startPoint){
       break;
     }
 
-    // ✅ følg segmentet
-    for (let j = foundIndex; j < foundCoords.length; j++){
+    // sjekk retning
+let forward = true;
 
-      const lat = foundCoords[j][1];
-      const lon = foundCoords[j][0];
+if (foundIndex > 0){
 
-      const key = lat.toFixed(5)+","+lon.toFixed(5);
+  const prev = foundCoords[foundIndex - 1];
+  const curr = foundCoords[foundIndex];
 
-      if (visited.has(key)) continue;
+  const dPrev = distMeters(
+    {lat: current[0], lng: current[1]},
+    [prev[1], prev[0]]
+  );
 
-      visited.add(key);
-      fullPath.push([lat, lon]);
-    }
+  const dCurr = distMeters(
+    {lat: current[0], lng: current[1]},
+    [curr[1], curr[0]]
+  );
+
+  // hvis vi kom fra "slutten", snu retning
+  if (dPrev < dCurr){
+    forward = false;
+  }
+}
+
+if (forward){
+
+  for (let j = foundIndex; j < foundCoords.length; j++){
+    const lat = foundCoords[j][1];
+    const lon = foundCoords[j][0];
+
+    const key = lat.toFixed(5)+","+lon.toFixed(5);
+    if (visited.has(key)) continue;
+
+    visited.add(key);
+    fullPath.push([lat, lon]);
+  }
+
+} else {
+
+  for (let j = foundIndex; j >= 0; j--){
+    const lat = foundCoords[j][1];
+    const lon = foundCoords[j][0];
+
+    const key = lat.toFixed(5)+","+lon.toFixed(5);
+    if (visited.has(key)) continue;
+
+    visited.add(key);
+    fullPath.push([lat, lon]);
+  }
+
+}
 
     // 👉 hopp til slutten
     const last = fullPath[fullPath.length - 1];
