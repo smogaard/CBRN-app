@@ -1729,8 +1729,16 @@ async function createFlowLayer(pos){
 	for (let i = 0; i < 500; i++){
 
   	const key = current.lat.toFixed(5)+","+current.lng.toFixed(5);
-  	if (visited.has(key)) continue;
-  	visited.add(key);
+  	
+	if (visited.has(key)){
+	  if (onRiver) {
+	    // ✅ tillat fortsatt bevegelse på elv
+	  } else {
+	    continue;
+	  }
+	}
+
+visited.add(key);
 
   	path.push([current.lat, current.lng]);
 	
