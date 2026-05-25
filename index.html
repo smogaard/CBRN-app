@@ -1789,6 +1789,17 @@ if (onRiver){
     break;
   }
 
+  // ✅ NY: sjekk om vi står stille
+  const dMove = distMeters(
+    {lat: current.lat, lng: current.lng},
+    nextRiver
+  );
+
+  if (dMove < 2){   // mindre enn 2 meter = samme punkt
+    console.log("ELV stuck → stopper");
+    break;
+  }
+
   current = {
     lat: nextRiver[0],
     lng: nextRiver[1]
