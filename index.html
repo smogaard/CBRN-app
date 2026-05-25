@@ -1440,7 +1440,6 @@ function followFullRiver(startPoint){
 
   let current = startPoint;
   const fullPath = [];
-
   const visited = new Set();
 
   for (let step = 0; step < 200; step++){
@@ -1452,68 +1451,80 @@ function followFullRiver(startPoint){
     // 🔍 finn segment som inneholder punktet
     for (let key in loadedTiles){
 
+      if (!key.startsWith("elvis")) continue;
+
       const data = loadedTiles[key];
       if (!data) continue;
 
-     for (let f of data.features){
+      for (let f of data.features){
 
-  const geom = f.geometry;
-  if (!geom) continue;
+        const geom = f.geometry;
+        if (!geom) continue;
 
-  // ✅ LINESTRING
-  if (geom.type === "LineString"){
+        // ✅ LINESTRING
+        if (geom.type === "LineString"){
 
-    const coords = geom.coordinates;
+          const coords = geom.coordinates;
 
-    for (let i = 0; i < coords.length; i++){
+          for (let i = 0; i < coords.length; i++){
 
-      const dist = distMeters(
-        { lat: current[0], lng: current[1] },
-        [coords[i][1], coords[i][0]]
-      );
+            const dist = distMeters(
+              { lat: current[0], lng: current[1] },
+              [coords[i][1], coords[i][0]]
+            );
 
-      if (dist < SNAP_DIST){
-        foundSegment = f;
-        foundIndex = i;
-        foundCoords = coords;
-        break;
-      }
-    }
-  }
+            if (dist < SNAP_DIST){
+              foundSegment = f;
+              foundIndex = i;
+              foundCoords = coords;
+              break;
+            }
+          }
+        }
 
-  // ✅ MULTILINESTRING
-  if (geom.type === "MultiLineString"){
+        // ✅ MULTILINESTRING
+        if (geom.type === "MultiLineString"){
 
-    for (let line of geom.coordinates){
+          for (let line of geom.coordinates){
 
-      for (let i = 0; i < line.length; i++){
+            for (let i = 0; i < line.length; i++){
 
-        const dist = distMeters(
-          { lat: current[0], lng: current[1] },
-          [line[i][1], line[i][0]]
-        );
+              const dist = distMeters(
+                { lat: current[0], lng: current[1] },
+                [line[i][1], line[i][0]]
+              );
 
-        if (dist < SNAP_DIST){
-          foundSegment = f;
-          foundIndex = i;
-          foundCoords = line;
+              if (dist < SNAP_DIST){
+                foundSegment = f;
+                foundIndex = i;
+                foundCoords = line;
+                break;
+              }
+            }
+
+            if (foundSegment){
+              break;
+            }
+          }
+        }
+
+        if (foundSegment){
           break;
         }
       }
 
-      if (foundSegment) {
-		break;
+      if (foundSegment){
+        break;
+      }
     }
-  }
-}      
 
-		 
- if (!foundSegment){
-  console.log("Ingen videre segment");
-  break;
-}     
+    // ✅ ingen treff → stopp
+    if (!foundSegment){
+      console.log("Ingen videre segment");
+      break;
+    }
 
-    // ✅ følg resten av segmentet
+    // ✅ følg segmentet
     for (let j = foundIndex; j < foundCoords.length; j++){
 
       const lat = foundCoords[j][1];
@@ -1527,10 +1538,9 @@ function followFullRiver(startPoint){
       fullPath.push([lat, lon]);
     }
 
-    // 👉 hopp til slutten av segmentet
+    // 👉 hopp til slutten
     const last = fullPath[fullPath.length - 1];
 
-    // ✅ finn neste nærmeste elv (kobling)
     let next = findNearestStream({
       lat: last[0],
       lng: last[1]
