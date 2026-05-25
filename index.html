@@ -1635,13 +1635,22 @@ async function createFlowLayer(pos){
 
 
   	// ✅ NYTT: sjekk om vi er nær en elv
-  	const stream = findNearestStream(current);
 
-  	if (stream){
+	const stream = findNearestStream(current);
 
-    	const dist = distMeters(current, stream);
+	if (stream){
 
-    	if (dist < SNAP_DIST){
+ 	 const distHere = distMeters(current, stream);
+
+  		// ✅ NYTT: sjekk også litt fremover
+ 	 const nextTest = await getSteepestDirectionDEM(
+    	current.lat,
+    	current.lng,
+    	30
+  		);
+
+  	 let distNext = Infinity;
+
 			
 																	console.log("SNAPPET! dist:", dist);
 
