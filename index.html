@@ -830,7 +830,7 @@ if (lastWindDir !== undefined && marker) {
 	
 if (marker) {
 
-  createFlowLayer(pos).then(layer => {
+  createFlowLayer(pos).then(async layer => {
 
     if (!layer) {
       console.log("FLOW: ingen layer");
@@ -840,7 +840,7 @@ if (marker) {
     
     flowLayer = layer.addTo(map);
 
-	connectFlowsToWater(layer);   // ✅ DENNE LINJEN
+	await connectFlowsToWater(layer);   // ✅ DENNE LINJEN
 
 
     console.log("FLOW tegnet");
@@ -1289,8 +1289,27 @@ const DEM_URL =
   `https://api.mapbox.com/v4/mapbox.terrain-rgb/{z}/{x}/{y}.pngraw?access_token=${MAPBOX_TOKEN}`;
 
 const tileCache = {};
+const elevationCache = {};
 
 
+	
+async function getElevationCached(lat, lng){
+
+  const key = lat.toFixed(5)+","+lng.toFixed(5);
+
+  if (key in elevationCache){
+    return elevationCache[key];
+  }
+
+  const elev = await getElevationDEM(lat, lng);
+
+  elevationCache[key] = elev;
+
+  return elev;
+}
+
+
+	
 function latLngToTile(lat, lng, zoom){
 
   const x = Math.floor((lng + 180) / 360 * Math.pow(2, zoom));
@@ -1434,167 +1453,91 @@ function projectPointToSegment(p, v, w){
 }
 	
 	
+async function getNextDownstreamPoint(current){
+
+  let best = null;
+  let bestElevation = await getElevationCached(current[0], current[1]);
+
+  for (let key in loadedTiles){
+
+    if (!key.startsWith("elvis")) continue;
+
+    const data = loadedTiles[key];
+    if (!data) continue;
+
+    for (let f of data.features){
+
+      const geom = f.geometry;
+      if (!geom) continue;
+
+      const lines =
+        geom.type === "LineString"
+          ? [geom.coordinates]
+          : geom.type === "MultiLineString"
+            ? geom.coordinates
+            : [];
+
+      for (let line of lines){
+
+        for (let i = 0; i < line.length; i++){
+
+          const pt = [line[i][1], line[i][0]];
+
+          const dist = distMeters(
+            {lat: current[0], lng: current[1]},
+            pt
+          );
+
+          // ✅ kun nærliggende punkter
+          if (dist > 50) continue;
+
+          const elev = await getElevationCached(pt[0], pt[1]);
+
+          if (elev < bestElevation){
+
+            bestElevation = elev;
+            best = pt;
+          }
+        }
+      }
+    }
+  }
+
+  return best;
+}
+
+
 	
 	
-function followFullRiver(startPoint){
+async function followFullRiverDEM(startPoint){
 
   let current = startPoint;
-  const fullPath = [];
+  const path = [];
   const visited = new Set();
 
-  for (let step = 0; step < 200; step++){
+  for (let i = 0; i < 200; i++){
 
-    let foundSegment = null;
-    let foundIndex = -1;
-    let foundCoords = null;
-
-    // 🔍 finn segment som inneholder punktet
-    for (let key in loadedTiles){
-
-      if (!key.startsWith("elvis")) continue;
-
-      const data = loadedTiles[key];
-      if (!data) continue;
-
-      for (let f of data.features){
-
-        const geom = f.geometry;
-        if (!geom) continue;
-
-        // ✅ LINESTRING
-        if (geom.type === "LineString"){
-
-          const coords = geom.coordinates;
-
-          for (let i = 0; i < coords.length; i++){
-
-            const dist = distMeters(
-              { lat: current[0], lng: current[1] },
-              [coords[i][1], coords[i][0]]
-            );
-
-            if (dist < SNAP_DIST){
-              foundSegment = f;
-              foundIndex = i;
-              foundCoords = coords;
-              break;
-            }
-          }
-        }
-
-        // ✅ MULTILINESTRING
-        if (geom.type === "MultiLineString"){
-
-          for (let line of geom.coordinates){
-
-            for (let i = 0; i < line.length; i++){
-
-              const dist = distMeters(
-                { lat: current[0], lng: current[1] },
-                [line[i][1], line[i][0]]
-              );
-
-              if (dist < SNAP_DIST){
-                foundSegment = f;
-                foundIndex = i;
-                foundCoords = line;
-                break;
-              }
-            }
-
-            if (foundSegment){
-              break;
-            }
-          }
-        }
-
-        if (foundSegment){
-          break;
-        }
-      }
-
-      if (foundSegment){
-        break;
-      }
-    }
-
-    // ✅ ingen treff → stopp
-    if (!foundSegment){
-      console.log("Ingen videre segment");
-      break;
-    }
-
-    // sjekk retning
-let forward = true;
-
-if (foundIndex > 0){
-
-  const prev = foundCoords[foundIndex - 1];
-  const curr = foundCoords[foundIndex];
-
-  const dPrev = distMeters(
-    {lat: current[0], lng: current[1]},
-    [prev[1], prev[0]]
-  );
-
-  const dCurr = distMeters(
-    {lat: current[0], lng: current[1]},
-    [curr[1], curr[0]]
-  );
-
-  // hvis vi kom fra "slutten", snu retning
-  if (dPrev < dCurr){
-    forward = false;
-  }
-}
-
-if (forward){
-
-  for (let j = foundIndex; j < foundCoords.length; j++){
-    const lat = foundCoords[j][1];
-    const lon = foundCoords[j][0];
-
-    const key = lat.toFixed(5)+","+lon.toFixed(5);
-    if (visited.has(key)) continue;
+    const key = current[0].toFixed(5)+","+current[1].toFixed(5);
+    if (visited.has(key)) break;
 
     visited.add(key);
-    fullPath.push([lat, lon]);
-  }
+    path.push(current);
 
-} else {
-
-  for (let j = foundIndex; j >= 0; j--){
-    const lat = foundCoords[j][1];
-    const lon = foundCoords[j][0];
-
-    const key = lat.toFixed(5)+","+lon.toFixed(5);
-    if (visited.has(key)) continue;
-
-    visited.add(key);
-    fullPath.push([lat, lon]);
-  }
-
-}
-
-    // 👉 hopp til slutten
-    const last = fullPath[fullPath.length - 1];
-
-    let next = findNearestStream({
-      lat: last[0],
-      lng: last[1]
-    });
+    const next = await getNextDownstreamPoint(current);
 
     if (!next){
-      console.log("STOP – sannsynlig vannspeil");
+      console.log("STOP – ingen lavere punkt");
       break;
     }
 
     current = next;
   }
 
-  return fullPath;
+  return path;
 }
 
+
+	
 	
 function generateStartPoints(center, radius = 20, count = 8){
 
@@ -1675,7 +1618,7 @@ async function getSteepestDirectionDEM(lat, lng, step = 60){
 
   const dirs = [0,45,90,135,180,225,270,315];
 
-  const base = await getElevationDEM(lat, lng);
+  const base = await getElevationCached(lat, lng);
 
   let best = null;
   let lowest = base;
@@ -1683,7 +1626,7 @@ async function getSteepestDirectionDEM(lat, lng, step = 60){
   for(let d of dirs){
 
     const p = destination(lat, lng, d * Math.PI/180, step);
-    const e = await getElevationDEM(p.lat, p.lng);
+    const e = await getElevationCached(p.lat, p.lng);
 
     if(e < lowest){
       lowest = e;
@@ -1781,7 +1724,7 @@ async function createFlowLayer(pos){
 
     	path.push([stream[0], stream[1], "river"]);
 
-    	const riverPath = followFullRiver(stream);
+    	const riverPath = await followFullRiverDEM(stream);
 
     	if (riverPath && riverPath.length > 0){
       		for (let p of riverPath){
@@ -1804,8 +1747,8 @@ async function createFlowLayer(pos){
   if (!next) break;
 
 
-      const h1 = await getElevationDEM(current.lat, current.lng);
-      const h2 = await getElevationDEM(next.lat, next.lng);
+      const h1 = await getElevationCached(current.lat, current.lng);
+      const h2 = await getElevationCached(next.lat, next.lng);
 
       // ✅ stopp hvis nesten flatt
       if (Math.abs(h1 - h2) < 0.15){
@@ -1829,7 +1772,7 @@ async function createFlowLayer(pos){
             40
           );
 
-          const h = await getElevationDEM(p.lat, p.lng);
+          const h = await getElevationCached(p.lat, p.lng);
 
           if (h < lowest){
             lowest = h;
@@ -1934,7 +1877,7 @@ function smoothPath(path){
 
 	
 
-function connectFlowsToWater(layer){
+async function connectFlowsToWater(layer){
 
   layer.eachLayer(poly => {
 
@@ -1963,7 +1906,7 @@ if (!stream){
 	).addTo(map);
 
 	// ✅ følg elva videre
-	const rawPath = followFullRiver(stream);
+	const rawPath = await followFullRiverDEM(stream);
 	const path = smoothPath(rawPath);
 
 
