@@ -171,7 +171,7 @@ let t0data;
 let loadedTiles = {};
 let gridLayer;
 	
-const SNAP_DIST = 300;    // distanse i meter
+const SNAP_DIST = 50;    // distanse i meter
 
 // =============================
 // ELVIS TILES
@@ -1715,7 +1715,7 @@ async function createFlowLayer(pos){
     	distNext = distMeters(nextTest, stream);
   	}
 
-  	if (distHere < SNAP_DIST || distNext < SNAP_DIST){
+  	if (distHere < SNAP_DIST && distNext < distHere){
 
     	console.log("SNAPPET! dist:", Math.min(distHere, distNext));
 
