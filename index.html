@@ -1763,7 +1763,7 @@ async function createFlowLayer(pos){
     	distNext = distMeters(nextTest, stream);
   	}
 
-  	if (distHere < SNAP_DIST && distNext < distHere){
+  	if (distHere < SNAP_DIST){
 
     	console.log("SNAPPET! dist:", Math.min(distHere, distNext));
 
