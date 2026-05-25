@@ -232,17 +232,17 @@ async function loadTile(type, lat, lng){
   
   if (!gridLayer) {
     console.warn("Grid ikke lastet enda");
-    return;
+    return Promise.resolve();
   }
 
 
   const id = findTileId(lat, lng);
 																					console.log("Tile ID:", id);
-  if (!id) return;
+  if (!id) return Promise.resolve();
 
   const key = `${type}_${id}`;
 
-  if (loadedTiles[key]) return;
+  if (loadedTiles[key]) return Promise.resolve();
 
   const filename = `${type}_tiles/${type}_tile_id_${id}.geojson`;
 																					console.log("Prøver å laste:", filename);
@@ -251,6 +251,7 @@ async function loadTile(type, lat, lng){
     const data = await res.json();
 
     loadedTiles[key] = data;
+	
 
     console.log("Loaded:", filename);
 
@@ -263,9 +264,12 @@ async function loadTile(type, lat, lng){
     if(type === "innsjo"){
       L.geoJSON(data, { color:"#3399ff", weight:1, fillOpacity:0.2 }).addTo(map);
     }
+	  
+	return data;
 
   } catch(e){
     console.warn("Manglende tile:", filename);
+	return null;
   }
 }
 
@@ -709,10 +713,21 @@ const points = [
   [pos.lat, pos.lng - 0.2]
 ];
 
+
+const promises = [];
+
 for (let p of points){
-  loadTile("elvis", p[0], p[1]);
-  loadTile("innsjo", p[0], p[1]);
+  promises.push(loadTile("elvis", p[0], p[1]));
+  promises.push(loadTile("innsjo", p[0], p[1]));
 }
+
+Promise.all(promises).then(() => {
+  console.log("✅ Tiles ferdig lastet");
+
+  updateWeather().then(() => {
+    updateMap();
+  });
+});
 
 
 	
@@ -727,10 +742,7 @@ for (let p of points){
 
 updateNow();
 
-// ✅ kjør vær først
-updateWeather().then(() => {
-  updateMap();   // tegn plumer etter at vind er hentet
-});
+
  
 // ✅ oppdater dag/natt med en gang
 if(t0.value){
