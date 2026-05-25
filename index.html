@@ -1655,13 +1655,22 @@ async function createFlowLayer(pos){
       	console.log("SNAPPET TIL ELVIS");
 
       	// legg inn punktet på elva
-      	path.push([stream[0], stream[1]]);
+		path.push([stream[0], stream[1]]);
 
-      	// ✅ STOPP DEM-flow her
-      	break;
-    	}
-  	}
+		// ✅ NYTT: følg elva videre
+		const riverPath = followFullRiver(stream);
 
+		if (riverPath && riverPath.length > 0){
+
+  		for (let p of riverPath){
+    		path.push(p);
+  }
+}
+
+// stopp denne flowen etter at den har fulgt elva
+break;
+
+			
   // ↙️ RESTEN AV DIN KODE SKAL KOMME ETTER DETTE
 
   const next = await getSteepestDirectionDEM(
