@@ -1879,7 +1879,7 @@ function smoothPath(path){
 
 async function connectFlowsToWater(layer){
 
-  layer.eachLayer(poly => {
+  layer.eachLayer(async poly => {
 
     const latlngs = poly.getLatLngs();
     if (!latlngs || latlngs.length === 0) return;
