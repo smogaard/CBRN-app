@@ -1784,7 +1784,14 @@ async function createFlowLayer(pos){
       	}
     }
 
-    break;
+    
+	current = {
+  	lat: stream[0],
+ 	 lng: stream[1]
+	};
+
+	continue;
+
   }
 }
 			
