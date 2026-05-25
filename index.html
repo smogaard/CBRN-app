@@ -1387,7 +1387,17 @@ function findNearestStream(point){
 
         for (let line of geom.coordinates){
 
-          for (let i = 0; i < line.length - 1; i++){
+  	       for (let i = 0; i < line.length; i++){
+
+ 			 const pt = [line[i][1], line[i][0]];
+
+ 			 const dist = distMeters(
+ 			   {lat: current[0], lng: current[1]},
+ 			   pt
+ 			 );
+
+ 			 // ✅ NY: hopp over samme punkt
+ 			 if (dist < 2) continue;
 
             const p1 = [line[i][1], line[i][0]];
             const p2 = [line[i+1][1], line[i+1][0]];
