@@ -1502,7 +1502,54 @@ async function getNextDownstreamPoint(current){
       }
     }
   }
+// fallback: velg nærmeste punkt hvis ingen lavere
+if (!best){
 
+  let closest = null;
+  let bestDist = Infinity;
+
+  for (let key in loadedTiles){
+
+    if (!key.startsWith("elvis")) continue;
+
+    const data = loadedTiles[key];
+    if (!data) continue;
+
+    for (let f of data.features){
+
+      const geom = f.geometry;
+      if (!geom) continue;
+
+      const lines =
+        geom.type === "LineString"
+          ? [geom.coordinates]
+          : geom.type === "MultiLineString"
+            ? geom.coordinates
+            : [];
+
+      for (let line of lines){
+
+        for (let pt of line){
+
+          const p = [pt[1], pt[0]];
+
+          const d = distMeters(
+            {lat: current[0], lng: current[1]},
+            p
+          );
+
+          if (d < bestDist){
+            bestDist = d;
+            closest = p;
+          }
+        }
+      }
+    }
+  }
+
+  return closest;
+}
+	
   return best;
 }
 
