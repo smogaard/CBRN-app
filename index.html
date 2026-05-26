@@ -1457,8 +1457,8 @@ function projectPointToSegment(p, v, w){
 	
 async function getNextDownstreamPoint(current){
 
-  let best = null;
-  let bestElevation = await getElevationCached(current[0], current[1]);
+  let bestNext = null;
+  let bestElevation = Infinity;
 
   for (let key in loadedTiles){
 
@@ -1481,87 +1481,60 @@ async function getNextDownstreamPoint(current){
 
       for (let line of lines){
 
-        for (let i = 0; i < line.length-1; i++){
+        // 🔥 finn nærmeste indeks i linja
+        let closestIndex = -1;
+        let closestDist = Infinity;
+
+        for (let i = 0; i < line.length; i++){
 
           const pt = [line[i][1], line[i][0]];
 
-          const dist = distMeters(
+          const d = distMeters(
             {lat: current[0], lng: current[1]},
             pt
           );
 
-			if(dist <2) continue;
+          if (d < closestDist){
+            closestDist = d;
+            closestIndex = i;
+          }
+        }
 
-          // ✅ kun nærliggende punkter
-          if (dist > 80) continue;
+        if (closestIndex === -1) continue;
 
-          const elev = await getElevationCached(pt[0], pt[1]);
+        // ✅ sjekk naboer (i-1 og i+1)
+        const neighbors = [];
 
-          if (elev < bestElevation + 3.0){
+        if (closestIndex > 0){
+          neighbors.push([
+            line[closestIndex - 1][1],
+            line[closestIndex - 1][0]
+          ]);
+        }
 
+        if (closestIndex < line.length - 1){
+          neighbors.push([
+            line[closestIndex + 1][1],
+            line[closestIndex + 1][0]
+          ]);
+        }
+
+        // ✅ velg laveste nabo (DEM bestemmer retning)
+        for (let n of neighbors){
+
+          const elev = await getElevationCached(n[0], n[1]);
+
+          if (elev < bestElevation){
             bestElevation = elev;
-            best = pt;
-          }
-        }
-      }
-    }
-  }
-// fallback: velg nærmeste punkt hvis ingen lavere
-if (!best){
-
-  let closest = null;
-  let bestDist = Infinity;
-
-  for (let key in loadedTiles){
-
-    if (!key.startsWith("elvis")) continue;
-
-    const data = loadedTiles[key];
-    if (!data) continue;
-
-    for (let f of data.features){
-
-      const geom = f.geometry;
-      if (!geom) continue;
-
-      const lines =
-        geom.type === "LineString"
-          ? [geom.coordinates]
-          : geom.type === "MultiLineString"
-            ? geom.coordinates
-            : [];
-
-      for (let line of lines){
-
-        for (let pt of line){
-
-          const p = [pt[1], pt[0]];
-
-          const d = distMeters(
-            {lat: current[0], lng: current[1]},
-            p
-          );
-
-			
-		  // ✅ viktig: hold oss lokalt
- 		  if (d > 80) continue;
-		  if (d < 2) continue;
-
-          if (d < bestDist){
-            bestDist = d;
-            closest = p;
+            bestNext = n;
           }
         }
       }
     }
   }
 
-  return closest;
+  return bestNext;
 }
-	
-  return best;
-}
-
 
 	
 	
@@ -1767,12 +1740,18 @@ async function createFlowLayer(pos){
 
   if (!onRiver && distHere < SNAP_DIST){
 
-    console.log("SNAPPET!");
+    																console.log("SNAPPET!");
+	  
+  		L.circle([current.lat, current.lng], {
+  		radius: 8,
+  		color: "blue"
+		}).addTo(map);
 
-    current = {
-      lat: stream[0],
-      lng: stream[1]
-    };
+	  
+    	current = {
+      	lat: stream[0],
+      	lng: stream[1]
+    	};
 
     path.push([current.lat, current.lng, "river"]);
 
