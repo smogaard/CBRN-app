@@ -1589,7 +1589,7 @@ async function getNextDownstreamPoint(current, lastPoint, visited){
 		if (dot < -0.7) continue;
 
 		// ✅ kraftig retningsbias
-		score += dot * 1000000;
+		score += dot * 200000;
   		}
 
   		if (score > bestScore){
