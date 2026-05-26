@@ -1747,7 +1747,7 @@
             const path = [];
             const visited = new Set();
 
-            for (let i = 0; i < 500; i++) {
+            for (let i = 0; i < 1500; i++) {
               const key = current.lat.toFixed(5) + "," + current.lng.toFixed(5);
               visited.add(
                 current.lat.toFixed(6) + "," + current.lng.toFixed(6),
@@ -1832,7 +1832,7 @@
                 if (dMove < 2) {
                   // mindre enn 2 meter = samme punkt
                   console.log("ELV stuck → stopper");
-                  break;
+                  continue;
                 }
 
                 // ✅ lagre hvor vi kom fra
@@ -1857,7 +1857,19 @@
               30,
             );
 
-            if (!next) break;
+           
+			if (!next){
+			  const fallback = await getSteepestDirectionDEM(
+			    current.lat,
+			    current.lng,
+			    80
+			  );
+
+			  if (!fallback) break;
+
+			  current = fallback;
+			  continue;
+			}
 
             const h1 = await getElevationCached(current.lat, current.lng);
             const h2 = await getElevationCached(next.lat, next.lng);
@@ -1908,26 +1920,32 @@
             }
 
             // 🔴 FORCE SNAP kun hvis vi IKKE allerede traff elv
-            if (!path.some((p) => p[2] === "river") && path.length > 5) {
-              const lastPoint = path[path.length - 1];
+           
+			if (!path.some(p => p[2] === "river") && path.length > 40){
+			
+			  const lastPoint = path[path.length - 1];
+			
+			  const stream = findNearestStream({
+			    lat: lastPoint[0],
+			    lng: lastPoint[1]
+			  });
+			
+			  if (stream){
+			
+			    const d = distMeters(
+			      {lat: lastPoint[0], lng: lastPoint[1]},
+			      stream
+			    );
+			
+			    if (d < 200){   // ✅ viktig
+			
+			      console.log("FORCED SNAP");
+			
+			      path.push([stream[0], stream[1], "river"]);
+			    }
+			  }
+			}
 
-              const stream = findNearestStream({
-                lat: lastPoint[0],
-                lng: lastPoint[1],
-              });
-
-              if (stream) {
-                console.log("FORCED SNAP");
-
-                // 🔵 vis også denne
-                L.circle([stream[0], stream[1]], {
-                  radius: 20,
-                  color: "purple",
-                }).addTo(map);
-
-                path.push([stream[0], stream[1], "river"]);
-              }
-            }
 
             console.log("PATH LENGTH:", path.length);
 
