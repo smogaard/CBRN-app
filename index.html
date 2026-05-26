@@ -1497,7 +1497,7 @@ async function getNextDownstreamPoint(current){
 
           const elev = await getElevationCached(pt[0], pt[1]);
 
-          if (elev < bestElevation + 1.0){
+          if (elev < bestElevation + 3.0){
 
             bestElevation = elev;
             best = pt;
