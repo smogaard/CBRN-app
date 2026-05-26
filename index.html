@@ -1829,11 +1829,11 @@ async function createFlowLayer(pos){
   																	console.log("Dist til nærmeste elv:", d);
 		}
 
-	if (stream){
+		if (stream){
 
-  const distHere = distMeters(current, stream);
+ 		const distHere = distMeters(current, stream);
 
-  if (!onRiver && distHere < SNAP_DIST){
+  		if (!onRiver && distHere < SNAP_DIST){
 
     																console.log("SNAPPET!");
 
@@ -1872,6 +1872,7 @@ async function createFlowLayer(pos){
     onRiver = true;
 
     continue;
+	}
   }
 }	
 
