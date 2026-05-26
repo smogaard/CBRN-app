@@ -1539,7 +1539,7 @@ async function getNextDownstreamPoint(current, lastPoint, visited){
 		if (v === key) count++;
 		}
 
-		if (count > 1 && !isLast) continue;
+		if (count > 2 && !isLast) continue;
 
 
 
@@ -1593,8 +1593,21 @@ async function getNextDownstreamPoint(current, lastPoint, visited){
 	  }
         
 		if (!best && candidates.length > 0){
-  			// fallback: ta første kandidat
-  			return candidates[0];
+
+  		// ✅ velg laveste av kandidatene som fallback
+  		let fallback = candidates[0];
+  		let lowest = await getElevationCached(fallback[0], fallback[1]);
+
+  		for (let c of candidates){
+    		const e = await getElevationCached(c[0], c[1]);
+
+    		if (e < lowest){
+      			lowest = e;
+      			fallback = c;
+    		}
+  		}
+
+  		return fallback;
 		}
 
 		return best;
