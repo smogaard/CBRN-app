@@ -1617,8 +1617,7 @@ async function getNextDownstreamPoint(current, lastPoint, visited){
 			bestScore = score;
     		best = c;
   		}
-	  }
-        
+	          
 		if (!best && finalCandidates.length > 0){
   			return finalCandidates[0];
 		}
