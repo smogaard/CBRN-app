@@ -152,6 +152,10 @@
 
     <script>
 
+
+function sleep(ms){
+  return new Promise(res => setTimeout(res, ms));
+}
 		
 
 /* =============================
@@ -1745,6 +1749,15 @@
             let lastPoint = null;
 
             const path = [];
+
+			const poly = L.polyline([], {
+			  color: "#ff0000",
+			  weight: 3,
+			  opacity: 0.8
+			}).addTo(map);
+			
+			layers.push(poly);
+
             const visited = new Set();
 
             for (let i = 0; i < 1500; i++) {
@@ -1756,6 +1769,7 @@
               visited.add(key);
 
               path.push([current.lat, current.lng]);
+			  poly.addLatLng([current.lat, current.lng]);
 
               if (i % 20 === 0) {
                 console.log("FLOW running, step:", i);
