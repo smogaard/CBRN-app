@@ -1455,7 +1455,7 @@ function projectPointToSegment(p, v, w){
 }
 	
 	
-async function getNextDownstreamPoint(current){
+async function getNextDownstreamPoint(current, lastPoint, visited){
 
   for (let key in loadedTiles){
 
@@ -1498,7 +1498,7 @@ async function getNextDownstreamPoint(current){
         }
 
         // ✅ kun hvis vi faktisk er på denne linja
-        if (closestDist > 10) continue;
+        if (closestDist > 40) continue;
 
         const candidates = [];
 
@@ -1517,19 +1517,45 @@ async function getNextDownstreamPoint(current){
         }
 
         // ✅ bruk DEM kun lokalt
-        let best = null;
-        let bestElev = Infinity;
+       let best = null;
+	   let bestScore = -Infinity;
 
-        for (let c of candidates){
+		for (let c of candidates){
 
-          const elev = await getElevationCached(c[0], c[1]);
+  		// unngå å gå tilbake til samme punkt
+  		const key = c[0].toFixed(6) + "," + c[1].toFixed(6);
+  		if (visited.has(key)) continue;
 
-          if (elev < bestElev){
-            bestElev = elev;
-            best = c;
-          }
-        }
+  		const elev = await getElevationCached(c[0], c[1]);
 
+  		// basis: lavere er bedre
+  		let score = -elev;
+
+  		// 🔥 RETNING (NYTT)
+  		if (lastPoint){
+
+    	const dir = [
+      	current[0] - lastPoint[0],
+      	current[1] - lastPoint[1]
+    	];
+
+    	const v = [
+      	c[0] - current[0],
+      	c[1] - current[1]
+    	];
+
+    	const dot = v[0]*dir[0] + v[1]*dir[1];
+
+    	// sterk bias fremover
+    	score += dot * 10000;
+  		}
+
+  		if (score > bestScore){
+    		
+			bestScore = score;
+    		best = c;
+  		}
+	  }
         return best; // ✅ STOP etter første treff!
       }
     }
@@ -1700,6 +1726,7 @@ async function createFlowLayer(pos){
     };
 	let onRiver = false;
 	let riverVisited = new Set();
+	let lastPoint = null;
 
     const path = [];
     const visited = new Set();
@@ -1708,13 +1735,13 @@ async function createFlowLayer(pos){
 	for (let i = 0; i < 500; i++){
 
   	const key = current.lat.toFixed(5)+","+current.lng.toFixed(5);
+	visited.add(current.lat.toFixed(6) + "," + current.lng.toFixed(6));
   	
 
-	if (visited.has(key)){
-	  if (!onRiver){
-	    continue;
-	  }
+	if (visited.has(key) && onRiver){
+  	break;
 	}
+
 
 	visited.add(key);
 
@@ -1742,6 +1769,15 @@ async function createFlowLayer(pos){
   if (!onRiver && distHere < SNAP_DIST){
 
     																console.log("SNAPPET!");
+
+		// ✅ viktig: sett lastPoint før snap
+		lastPoint = [current.lat, current.lng];
+
+		current = {
+		  lat: stream[0],
+		  lng: stream[1]
+		};
+
 	  
   		L.circle([current.lat, current.lng], {
   		radius: 8,
@@ -1749,12 +1785,7 @@ async function createFlowLayer(pos){
 		}).addTo(map);
 
 	  
-    	current = {
-      	lat: stream[0],
-      	lng: stream[1]
-    	};
-
-    path.push([current.lat, current.lng, "river"]);
+    	    path.push([current.lat, current.lng, "river"]);
 
     onRiver = true;
 
@@ -1766,7 +1797,11 @@ async function createFlowLayer(pos){
 // ✅ Følg elv punkt-for-punkt
 if (onRiver){
 
-  const nextRiver = await getNextDownstreamPoint([current.lat, current.lng]);
+  const nextRiver = await getNextDownstreamPoint(
+  	[current.lat, current.lng],
+  	lastPoint,
+  	visited
+  );
 
   if (!nextRiver){
     console.log("ELV STOP");
@@ -1784,12 +1819,16 @@ if (onRiver){
     break;
   }
 
-  current = {
-    lat: nextRiver[0],
-    lng: nextRiver[1]
-  };
+	// ✅ lagre hvor vi kom fra
+	lastPoint = [current.lat, current.lng];
 
-  path.push([current.lat, current.lng, "river"]);
+	current = {
+	  lat: nextRiver[0],
+	  lng: nextRiver[1]
+	};
+
+	path.push([current.lat, current.lng, "river"]);
+
 
   continue;
 }
