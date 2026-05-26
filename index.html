@@ -1481,7 +1481,7 @@ async function getNextDownstreamPoint(current){
 
       for (let line of lines){
 
-        for (let i = 0; i < line.length; i++){
+        for (let i = 0; i < line.length-1; i++){
 
           const pt = [line[i][1], line[i][0]];
 
@@ -1545,7 +1545,7 @@ if (!best){
 			
 		  // ✅ viktig: hold oss lokalt
  		  if (d > 80) continue;
-
+		  if (d < 2) continue;
 
           if (d < bestDist){
             bestDist = d;
