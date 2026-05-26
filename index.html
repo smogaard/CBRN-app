@@ -1571,9 +1571,7 @@ async function getNextDownstreamPoint(current, lastPoint, visited){
 		const here = await getElevationCached(current[0], current[1]);
 		const diff = elev - here;
 
-		// ❌ IKKE gå opp mer enn 0.2 m (strammere)
-		if (diff > 0.2) continue;
-
+		
 		let score = -elev;
 
 		// ✅ STRAFF oppover kraftig
