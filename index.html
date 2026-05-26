@@ -1457,7 +1457,12 @@ function projectPointToSegment(p, v, w){
 	
 async function getNextDownstreamPoint(current, lastPoint, visited){
 
-  for (let key in loadedTiles){
+	
+	let globalBest = null;
+	let globalScore = -Infinity;
+
+
+  	for (let key in loadedTiles){
 
     if (!key.startsWith("elvis")) continue;
 
@@ -1612,23 +1617,19 @@ async function getNextDownstreamPoint(current, lastPoint, visited){
 		score += dot * 200000;
   		}
 
-  		if (score > bestScore){
-    		
-			bestScore = score;
-    		best = c;
-  		}
-	          
-		if (!best && finalCandidates.length > 0){
-  			return finalCandidates[0];
+  		if (score > globalScore){
+		  globalScore = score;
+		  globalBest = c;
 		}
-
-		return best;
-
-      }
+	  }
     }
   }
 
-  return null;
+  	if (globalBest){
+  	  return globalBest;
+	}
+
+return null;
 }
 	
 	
