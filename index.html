@@ -830,7 +830,7 @@ if (lastWindDir !== undefined && marker) {
 	
 if (marker) {
 
-  createFlowLayer(pos).then(async layer => {
+  (pos).then(async layer => {
 
     if (!layer) {
       console.log("FLOW: ingen layer");
@@ -1983,7 +1983,7 @@ if (onRiver){
         current = next;
       }
     }
-}
+
 	  
 // 🔴 FORCE SNAP kun hvis vi IKKE allerede traff elv
 	if (!path.some(p => p[2] === "river") && path.length > 5){
