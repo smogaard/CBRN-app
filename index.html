@@ -1457,9 +1457,6 @@ function projectPointToSegment(p, v, w){
 	
 async function getNextDownstreamPoint(current){
 
-  let bestNext = null;
-  let bestElevation = Infinity;
-
   for (let key in loadedTiles){
 
     if (!key.startsWith("elvis")) continue;
@@ -1481,7 +1478,7 @@ async function getNextDownstreamPoint(current){
 
       for (let line of lines){
 
-        // 🔥 finn nærmeste indeks i linja
+        // ✅ finn nærmeste punkt i DENNE LINJA
         let closestIndex = -1;
         let closestDist = Infinity;
 
@@ -1500,42 +1497,46 @@ async function getNextDownstreamPoint(current){
           }
         }
 
-        if (closestIndex === -1) continue;
+        // ✅ kun hvis vi faktisk er på denne linja
+        if (closestDist > 10) continue;
 
-        // ✅ sjekk naboer (i-1 og i+1)
-        const neighbors = [];
+        const candidates = [];
 
         if (closestIndex > 0){
-          neighbors.push([
+          candidates.push([
             line[closestIndex - 1][1],
             line[closestIndex - 1][0]
           ]);
         }
 
         if (closestIndex < line.length - 1){
-          neighbors.push([
+          candidates.push([
             line[closestIndex + 1][1],
             line[closestIndex + 1][0]
           ]);
         }
 
-        // ✅ velg laveste nabo (DEM bestemmer retning)
-        for (let n of neighbors){
+        // ✅ bruk DEM kun lokalt
+        let best = null;
+        let bestElev = Infinity;
 
-          const elev = await getElevationCached(n[0], n[1]);
+        for (let c of candidates){
 
-          if (elev < bestElevation){
-            bestElevation = elev;
-            bestNext = n;
+          const elev = await getElevationCached(c[0], c[1]);
+
+          if (elev < bestElev){
+            bestElev = elev;
+            best = c;
           }
         }
+
+        return best; // ✅ STOP etter første treff!
       }
     }
   }
 
-  return bestNext;
+  return null;
 }
-
 	
 	
 async function followFullRiverDEM(startPoint){
