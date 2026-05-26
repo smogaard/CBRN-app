@@ -1545,13 +1545,20 @@ async function getNextDownstreamPoint(current, lastPoint, visited){
 
   		const elev = await getElevationCached(c[0], c[1]);
 
-  		const here = await getElevationCached(current[0], current[1]);
+  		
+		const here = await getElevationCached(current[0], current[1]);
 		const diff = elev - here;
 
-		// ❌ IKKE gå opp mer enn 0.5 m
-		if (diff > 0.5) continue;
+		// ❌ IKKE gå opp mer enn 0.2 m (strammere)
+		if (diff > 0.2) continue;
 
 		let score = -elev;
+
+		// ✅ STRAFF oppover kraftig
+		if (diff > 0){
+  			score -= diff * 5000;
+		}
+
 
 
   		// 🔥 RETNING (NYTT)
