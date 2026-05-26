@@ -1532,7 +1532,15 @@ async function getNextDownstreamPoint(current, lastPoint, visited){
   			Math.abs(c[0] - lastPoint[0]) < 0.00001 &&
   			Math.abs(c[1] - lastPoint[1]) < 0.00001;
 
-		if (visited.has(key) && !isLast) continue;
+		// ✅ bare blokkér hvis vi har vært der flere ganger
+		let count = 0;
+
+		for (let v of visited){
+		if (v === key) count++;
+		}
+
+		if (count > 1 && !isLast) continue;
+
 
 
   		const elev = await getElevationCached(c[0], c[1]);
@@ -1571,7 +1579,14 @@ async function getNextDownstreamPoint(current, lastPoint, visited){
     		best = c;
   		}
 	  }
-        return best; // ✅ STOP etter første treff!
+        
+		if (!best && candidates.length > 0){
+  			// fallback: ta første kandidat
+  			return candidates[0];
+		}
+
+		return best;
+
       }
     }
   }
@@ -1594,7 +1609,11 @@ async function followFullRiverDEM(startPoint){
     visited.add(key);
     path.push(current);
 
-    const next = await getNextDownstreamPoint(current);
+   	const next = await getNextDownstreamPoint(
+  		current,
+  		null,
+  		new Set()
+	);
 
     if (!next){
       console.log("STOP – ingen lavere punkt");
