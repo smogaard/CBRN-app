@@ -828,6 +828,7 @@ if (lastWindDir !== undefined && marker) {
 }
 
 	
+
 if (marker) {
 
   createFlowLayer(pos).then(async layer => {
@@ -837,11 +838,9 @@ if (marker) {
       return;
     }
 
-    
     flowLayer = layer.addTo(map);
 
-	await connectFlowsToWater(layer);   // ✅ DENNE LINJEN
-
+    await connectFlowsToWater(layer);
 
     console.log("FLOW tegnet");
 
@@ -850,6 +849,7 @@ if (marker) {
   });
 
 }
+
 
 	
 // sørg for at hotzone ligger øverst
