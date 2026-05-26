@@ -838,23 +838,10 @@ function sleep(ms){
         }
 
         if (marker) {
-          createFlowLayer(pos)
-            .then(async (layer) => {
-              if (!layer) {
-                console.log("FLOW: ingen layer");
-                return;
-              }
 
-              flowLayer = layer.addTo(map);
+  			createFlowLayer(pos);   // ✅ bare kall funksjonen
 
-              await connectFlowsToWater(layer);
-
-              console.log("FLOW tegnet");
-            })
-            .catch((e) => {
-              console.error("FLOW ERROR", e);
-            });
-        }
+		}
 
         // sørg for at hotzone ligger øverst
         if (hotCircle) {
@@ -1740,6 +1727,7 @@ function sleep(ms){
           const layers = [];
 
           for (const start of startPoints) {
+			await new Promise(requestAnimationFrame);
             let current = {
               lat: start.lat,
               lng: start.lng,
@@ -1770,6 +1758,11 @@ function sleep(ms){
 
               path.push([current.lat, current.lng]);
 			  poly.addLatLng([current.lat, current.lng]);
+				
+			  if (i % 2 === 0){
+			    await new Promise(requestAnimationFrame);  // ✅ OG DENNE
+			  }
+
 
               if (i % 20 === 0) {
                 console.log("FLOW running, step:", i);
