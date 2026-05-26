@@ -831,7 +831,7 @@ if (lastWindDir !== undefined && marker) {
 
 if (marker) {
 
-  createFlowLayer(pos).then(async layer => {
+  (pos).then(async layer => {
 
     if (!layer) {
       console.log("FLOW: ingen layer");
@@ -2024,7 +2024,7 @@ if (onRiver){
       );
     }
   }	
-
+}
 
   return L.layerGroup(layers);
 }	
