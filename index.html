@@ -1856,6 +1856,8 @@ function sleep(ms){
               }
             }
 
+			await connectFlowsToWater(poly);
+
             // ↙️ RESTEN AV DIN KODE SKAL KOMME ETTER DETTE
 
             const next = await getSteepestDirectionDEM(
