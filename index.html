@@ -1727,7 +1727,11 @@ function sleep(ms){
           const layers = [];
 
           for (const start of startPoints) {
-			await new Promise(requestAnimationFrame);
+			
+			if (i % 20 === 0) {
+			  await new Promise(requestAnimationFrame);
+			}
+
             let current = {
               lat: start.lat,
               lng: start.lng,
@@ -1757,7 +1761,11 @@ function sleep(ms){
               visited.add(key);
 
               path.push([current.lat, current.lng]);
-			  poly.addLatLng([current.lat, current.lng]);
+			  
+			  if (i % 3 === 0) {
+			  	poly.addLatLng([current.lat, current.lng]);
+			  }
+
 				
 			  if (i % 2 === 0){
 			    await new Promise(requestAnimationFrame);  // ✅ OG DENNE
