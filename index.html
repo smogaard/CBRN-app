@@ -1726,11 +1726,11 @@ function sleep(ms){
           const startPoints = generateStartPoints(pos, 30, 12);
           const layers = [];
 
-          for (const start of startPoints) {
+          
+		  for (const start of startPoints) {
 			
-			if (i % 20 === 0) {
-			  await new Promise(requestAnimationFrame);
-			}
+		  await new Promise(requestAnimationFrame);
+
 
             let current = {
               lat: start.lat,
@@ -1867,7 +1867,7 @@ function sleep(ms){
 
                 continue;
               }
-            }
+            
 
 			// await connectFlowsToWater(poly);
 
@@ -1966,6 +1966,7 @@ function sleep(ms){
 			      path.push([stream[0], stream[1], "river"]);
 			    }
 			  }
+			 }
 			}
 
 
