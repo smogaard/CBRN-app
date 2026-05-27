@@ -1767,7 +1767,7 @@ function sleep(ms){
 			  }
 
 			  
-			  if (i % 3 === 0) {
+			  if (i % 1 === 0) {
 			  	poly.addLatLng([current.lat, current.lng]);
 			  }
 
@@ -1871,7 +1871,7 @@ function sleep(ms){
             const next = await getSteepestDirectionDEM(
               current.lat,
               current.lng,
-              30,
+              10,
             );
 
            
