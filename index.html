@@ -1383,6 +1383,82 @@ function sleep(ms){
       }
 
 
+		function findNextRiverSegment(currentPoint, prevPoint) {
+		  let bestLine = null;
+		  let bestIndex = -1;
+		  let bestScore = -Infinity;
+		
+		  for (let key in loadedTiles) {
+			if (!key.startsWith("elvis")) continue;
+		
+			const data = loadedTiles[key];
+			if (!data) continue;
+		
+			for (let f of data.features) {
+			  const geom = f.geometry;
+			  if (!geom) continue;
+		
+			  const lines =
+				geom.type === "LineString"
+				  ? [geom.coordinates]
+				  : geom.type === "MultiLineString"
+				  ? geom.coordinates
+				  : [];
+		
+			  for (let line of lines) {
+				for (let i = 0; i < line.length; i++) {
+				  const pt = [line[i][1], line[i][0]];
+		
+				  const d = distMeters(
+					{ lat: currentPoint[0], lng: currentPoint[1] },
+					pt
+				  );
+		
+				  if (d > 5) continue; // må være koblet
+		
+				  // retning (unngå bakover)
+				  if (prevPoint) {
+					const dir = [
+					  currentPoint[0] - prevPoint[0],
+					  currentPoint[1] - prevPoint[1]
+					];
+		
+					const v = [
+					  pt[0] - currentPoint[0],
+					  pt[1] - currentPoint[1]
+					];
+		
+					const len1 = Math.hypot(dir[0], dir[1]);
+					const len2 = Math.hypot(v[0], v[1]);
+		
+					if (len1 > 0 && len2 > 0) {
+					  const dot =
+						(dir[0] / len1) * (v[0] / len2) +
+						(dir[1] / len1) * (v[1] / len2);
+		
+					  if (dot < -0.5) continue; // ikke gå bakover
+					  
+					  if (dot > bestScore) {
+						bestScore = dot;
+						bestLine = line;
+						bestIndex = i;
+					  }
+					}
+				  }
+				}
+			  }
+			}
+		  }
+		
+		  if (!bestLine) return null;
+		
+		  return {
+			line: bestLine,
+			index: bestIndex
+		  };
+		}
+			
+
 	  function isInWater(lat, lng) {
 		  for (let key in loadedTiles) {
 		    if (!key.startsWith("innsjo")) continue;
@@ -1939,12 +2015,26 @@ function sleep(ms){
 				  let nextIndex = riverIndex + 1;
 				
 				  if (nextIndex >= riverLine.length) {
-				    // ✅ nådde enden av linjen
+
+				  const nextSeg = findNextRiverSegment(
+				    [current.lat, current.lng],
+				    lastPoint
+				  );
+				
+				  if (!nextSeg) {
+				    console.log("ELV NETTVERK SLUTT");
 				    break;
 				  }
 				
-				  const next = riverLine[nextIndex];
+				  riverLine = nextSeg.line;
+				  riverIndex = nextSeg.index;
 				
+				  continue;
+				}
+				
+				  const next = riverLine[nextIndex];
+				  lastPoint = [current.lat, current.lng];
+				 
 				  current = {
 				    lat: next[1],
 				    lng: next[0],
