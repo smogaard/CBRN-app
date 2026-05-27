@@ -1938,7 +1938,7 @@ function sleep(ms){
 
             // 🔴 FORCE SNAP kun hvis vi IKKE allerede traff elv
            
-			if (!path.some(p => p[2] === "river") && path.length > 40){
+			if (!onRiver && path.length > 60){
 			
 			  const lastPoint = path[path.length - 1];
 			
