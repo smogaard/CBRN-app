@@ -1894,22 +1894,12 @@ function sleep(ms){
 				    visited
 				  );
 				
-				  if (!nextRiver) {
-				    console.log("ELV STOP → prøver videre");
-					  
-					  // ✅ fallback: gå litt videre i samme retning
-					  const fallback = await getSteepestDirectionDEM(
-					    current.lat,
-					    current.lng,
-					    10
-					  );
-					
-					  if (fallback) {
-					    current = fallback;
-					  }
+				  
+					if (!nextRiver) {
+					  console.log("ELV SLUTT");
+					  break;   // ✅ STOPP helt
+					}
 
-				    continue;
-				  }
 				
 				  const dMove = distMeters(
 				    { lat: current.lat, lng: current.lng },
