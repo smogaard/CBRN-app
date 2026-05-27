@@ -1392,7 +1392,7 @@ function sleep(ms){
 		
 		    for (let f of data.features) {
 		      if (f.geometry.type === "Polygon") {
-		        if (pointInPolygon([lat, lng], f.geometry.coordinates[0])) {
+		        if (pointInPolygon([lng, lat], f.geometry.coordinates[0])) {
 		          return true;
 		        }
 		      }
@@ -1604,7 +1604,7 @@ function sleep(ms){
               }
             }
           }
-
+		}
          	if (globalBest) {
 			  return globalBest;
 			}
@@ -1649,7 +1649,7 @@ function sleep(ms){
 			}
 			
 			return fallback;   // ✅ ALDRI null
-        }
+        
 	  }
 
 
@@ -1953,11 +1953,8 @@ function sleep(ms){
 				      lng: nextRiver[1],
 				    };
 					poly.addLatLng([current.lat, current.lng]);
-				
 				    path.push([current.lat, current.lng, "river"]);
-					poly.addLatLng([current.lat, current.lng]);
-
-					
+									
 					if (isInWater(current.lat, current.lng)) {
 					  console.log("TREFFER INNSJØ/KYST – STOPPER");
 					  break;
