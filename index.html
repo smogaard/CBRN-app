@@ -1849,6 +1849,7 @@ function sleep(ms){
                   }).addTo(map);
 
                   path.push([current.lat, current.lng, "river"]);
+				  poly.addLatLng([current.lat, current.lng]);
 					const prev = path[path.length - 2];
 
 					if (prev) {
