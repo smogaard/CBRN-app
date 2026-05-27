@@ -1383,6 +1383,71 @@ function sleep(ms){
       }
 
 
+		function snapToNextRiver(current, currentLine) {
+		  let best = null;
+		  let bestDist = Infinity;
+		  let bestLine = null;
+		  let bestIndex = -1;
+		
+		  for (let key in loadedTiles) {
+		    if (!key.startsWith("elvis")) continue;
+		
+		    const data = loadedTiles[key];
+		    if (!data) continue;
+		
+		    for (let f of data.features) {
+		      const geom = f.geometry;
+		      if (!geom) continue;
+		
+		      const lines =
+		        geom.type === "LineString"
+		          ? [geom.coordinates]
+		          : geom.type === "MultiLineString"
+		          ? geom.coordinates
+		          : [];
+		
+		      for (let line of lines) {
+		
+		        // ✅ hopp over samme linje
+		        if (line === currentLine) continue;
+		
+		        for (let i = 0; i < line.length; i++) {
+		          const pt = [line[i][1], line[i][0]];
+		
+		          const d = distMeters(current, pt);
+
+					
+				   if (lastPoint) {
+				      const dPrev = distMeters(
+				        { lat: lastPoint[0], lng: lastPoint[1] },
+				        pt
+				      );
+				
+				      if (dPrev < 5) continue;
+				    }
+
+					
+		          if (d < bestDist && d < 40) {   // ✅ radius
+		            bestDist = d;
+		            best = pt;
+		            bestLine = line;
+		            bestIndex = i;
+		          }
+		        }
+		      }
+		    }
+		  }
+		
+		  if (!best) return null;
+		
+		  return {
+		    point: best,
+		    line: bestLine,
+		    index: bestIndex
+		  };
+		}
+
+		
 		function findNextRiverSegment(currentPoint, prevPoint) {
 		  let bestLine = null;
 		  let bestIndex = -1;
@@ -2034,21 +2099,30 @@ function sleep(ms){
 				
 				  if (nextIndex >= riverLine.length) {
 
-				  const nextSeg = findNextRiverSegment(
-				    [current.lat, current.lng],
-				    lastPoint
-				  );
-				
-				  if (!nextSeg) {
-				    console.log("ELV NETTVERK SLUTT");
-				    break;
-				  }
-				
-				  riverLine = nextSeg.line;
-				  riverIndex = nextSeg.index;
-				
-				  continue;
-				}
+					  const snap = snapToNextRiver(
+					    { lat: current.lat, lng: current.lng },
+					    riverLine
+					  );
+					
+					  if (!snap) {
+					    console.log("ELV END → ingen ny elv funnet");
+					    break;
+					  }
+					
+					  console.log("HOPPER TIL NY ELV");
+					
+					  riverLine = snap.line;
+					  riverIndex = snap.index;
+					
+					  current = {
+					    lat: snap.point[0],
+					    lng: snap.point[1]
+					  };
+					
+					  poly.addLatLng([current.lat, current.lng]);
+					
+					  continue;
+					}
 				
 				  const next = riverLine[nextIndex];
 				  lastPoint = [current.lat, current.lng];
