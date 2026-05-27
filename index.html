@@ -1889,7 +1889,19 @@ function sleep(ms){
 				  );
 				
 				  if (!nextRiver) {
-				    console.log("ELV STOP");
+				    console.log("ELV STOP → prøver videre");
+					  
+					  // ✅ fallback: gå litt videre i samme retning
+					  const fallback = await getSteepestDirectionDEM(
+					    current.lat,
+					    current.lng,
+					    10
+					  );
+					
+					  if (fallback) {
+					    current = fallback;
+					  }
+
 				    continue;
 				  }
 				
