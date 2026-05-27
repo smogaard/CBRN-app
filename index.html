@@ -1761,6 +1761,11 @@ function sleep(ms){
               visited.add(key);
 
               path.push([current.lat, current.lng]);
+				
+			  if (i % 100 === 0) {
+				  console.log("pos:", current.lat, current.lng);
+			  }
+
 			  
 			  if (i % 3 === 0) {
 			  	poly.addLatLng([current.lat, current.lng]);
@@ -1864,7 +1869,7 @@ function sleep(ms){
               }
             }
 
-			await connectFlowsToWater(poly);
+			// await connectFlowsToWater(poly);
 
             // ↙️ RESTEN AV DIN KODE SKAL KOMME ETTER DETTE
 
