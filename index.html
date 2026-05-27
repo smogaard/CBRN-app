@@ -1815,6 +1815,8 @@ function sleep(ms){
               lng: start.lng,
             };
             let onRiver = false;
+			let riverLine = null;
+			let riverIndex = -1;
             let riverVisited = new Set();
             let lastPoint = null;
 
@@ -1872,103 +1874,99 @@ function sleep(ms){
                 const distHere = distMeters(current, stream);
 
                 if (!onRiver && distHere < SNAP_DIST) {
-                  console.log("SNAPPET!");
-
-                  // ✅ viktig: sett lastPoint før snap
-                  lastPoint = [current.lat, current.lng];
-
-                  current = {
-                    lat: stream[0],
-                    lng: stream[1],
-                  };
-
-                  L.circle([current.lat, current.lng], {
-                    radius: 8,
-                    color: "blue",
-                  }).addTo(map);
-
-                  path.push([current.lat, current.lng, "river"]);
+				  console.log("SNAPPET!");
+				
+				  let bestLine = null;
+				  let bestIndex = -1;
+				  let bestDist = Infinity;
+				
+				  for (let key in loadedTiles) {
+				    if (!key.startsWith("elvis")) continue;
+				
+				    const data = loadedTiles[key];
+				    if (!data) continue;
+				
+				    for (let f of data.features) {
+				      const geom = f.geometry;
+				      if (!geom) continue;
+				
+				      const lines =
+				        geom.type === "LineString"
+				          ? [geom.coordinates]
+				          : geom.type === "MultiLineString"
+				          ? geom.coordinates
+				          : [];
+				
+				      for (let line of lines) {
+				        for (let i = 0; i < line.length; i++) {
+				          const pt = [line[i][1], line[i][0]];
+				
+				          const d = distMeters(current, pt);
+				
+				          if (d < bestDist) {
+				            bestDist = d;
+				            bestLine = line;
+				            bestIndex = i;
+				          }
+				        }
+				      }
+				    }
+				  }
+				
+				  if (!bestLine) break;
+				
+				  riverLine = bestLine;
+				  riverIndex = bestIndex;
+				
+				  current = {
+				    lat: riverLine[riverIndex][1],
+				    lng: riverLine[riverIndex][0],
+				  };
+				
 				  poly.addLatLng([current.lat, current.lng]);
-					
-					if (i % 5 === 0) {
-					  await new Promise(requestAnimationFrame);
-					}
-
-					const prev = path[path.length - 2];
-
-					if (prev) {
-					  const mid = [
-					    (prev[0] + current.lat) / 2,
-					    (prev[1] + current.lng) / 2
-					  ];
-					
-					  poly.addLatLng(mid);
-					}
-
-                  // ✅ hvis vi begynner å oscillere → stopp
-                  if (path.length > 10) {
-                    const last3 = path.slice(-3);
-
-                    if (
-                      last3[0][0] === last3[2][0] &&
-                      last3[0][1] === last3[2][1]
-                    ) {
-                      console.log("ELV oscillation → stopper");
-                      break;
-                    }
-                  }
-
-                  onRiver = true;
-
-                  continue;
-                }
+				  path.push([current.lat, current.lng, "river"]);
+				
+				  onRiver = true;
+				  continue;
+				}
               }
 
               // ✅ Følg elv punkt-for-punkt
              if (onRiver) {
 
-				  const nextRiver = await getNextDownstreamPoint(
-				    [current.lat, current.lng],
-				    lastPoint,
-				    visited
-				  );
+				  if (!riverLine || riverIndex === -1) break;
 				
-				  
-					if (!nextRiver) {
-					  console.log("ELV SLUTT");
-					  break;   // ✅ STOPP helt
-					}
-
+				  let nextIndex = riverIndex + 1;
 				
-				  const dMove = distMeters(
-				    { lat: current.lat, lng: current.lng },
-				    nextRiver
-				  );
-				
-				  if (dMove >= 2) {   // ✅ flyttet inni if
-				    lastPoint = [current.lat, current.lng];
-				
-				    current = {
-				      lat: nextRiver[0],
-				      lng: nextRiver[1],
-				    };
-					poly.addLatLng([current.lat, current.lng]);
-				    path.push([current.lat, current.lng, "river"]);
-									
-					if (isInWater(current.lat, current.lng)) {
-					  console.log("TREFFER INNSJØ/KYST – STOPPER");
-					  break;
-					}
-
-					  
-					if (i % 5 === 0) {
-					  await new Promise(requestAnimationFrame);
-					}
-
+				  if (nextIndex >= riverLine.length) {
+				    // ✅ nådde enden av linjen
+				    break;
 				  }
 				
-				  continue;   // ✅ ALLTID continue – uansett
+				  const next = riverLine[nextIndex];
+				
+				  current = {
+				    lat: next[1],
+				    lng: next[0],
+				  };
+				
+				  riverIndex = nextIndex;
+				
+				  poly.addLatLng([current.lat, current.lng]);
+				  path.push([current.lat, current.lng, "river"]);
+				
+				  if (isInWater(current.lat, current.lng)) {
+				    console.log("TREFFER INNSJØ/KYST – STOPPER");
+				    break;
+				  }
+				
+				  if (i % 5 === 0) {
+				    await new Promise(requestAnimationFrame);
+				  }
+				
+				  continue;
 				}
+
             
 
 			// await connectFlowsToWater(poly);
