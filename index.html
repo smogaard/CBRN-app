@@ -1527,7 +1527,7 @@ function sleep(ms){
 
                 // ✅ STRAFF oppover kraftig
                 if (diff > 0) {
-                  score -= diff * 5000;
+                  score -= diff * 200;
                 }
 
                 // 🔥 RETNING (NYTT)
@@ -1566,11 +1566,50 @@ function sleep(ms){
             }
           }
 
-          if (globalBest) {
-            return globalBest;
-          }
-
-          return null;
+         	if (globalBest) {
+			  return globalBest;
+			}
+			
+			// ✅ fallback: velg nærmeste punkt videre
+			let fallback = null;
+			let bestDist = Infinity;
+			
+			for (let key in loadedTiles) {
+			  if (!key.startsWith("elvis")) continue;
+			
+			  const data = loadedTiles[key];
+			  if (!data) continue;
+			
+			  for (let f of data.features) {
+			    const geom = f.geometry;
+			    if (!geom) continue;
+			
+			    const lines =
+			      geom.type === "LineString"
+			        ? [geom.coordinates]
+			        : geom.type === "MultiLineString"
+			        ? geom.coordinates
+			        : [];
+			
+			    for (let line of lines) {
+			      for (let pt of line) {
+			        const candidate = [pt[1], pt[0]];
+			
+			        const d = distMeters(
+			          { lat: current[0], lng: current[1] },
+			          candidate
+			        );
+			
+			        if (d < bestDist) {
+			          bestDist = d;
+			          fallback = candidate;
+			        }
+			      }
+			    }
+			  }
+			}
+			
+			return fallback;   // ✅ ALDRI null
         }
 	  }
 
