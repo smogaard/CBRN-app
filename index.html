@@ -1810,6 +1810,16 @@ function sleep(ms){
                   }).addTo(map);
 
                   path.push([current.lat, current.lng, "river"]);
+					const prev = path[path.length - 2];
+
+					if (prev) {
+					  const mid = [
+					    (prev[0] + current.lat) / 2,
+					    (prev[1] + current.lng) / 2
+					  ];
+					
+					  poly.addLatLng(mid);
+					}
 
                   // ✅ hvis vi begynner å oscillere → stopp
                   if (path.length > 10) {
