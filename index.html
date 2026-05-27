@@ -1383,7 +1383,7 @@ function sleep(ms){
       }
 
 
-		function snapToNextRiver(current, currentLine) {
+		function snapToNextRiver(current, currentLine, lastPoint) {
 		  let best = null;
 		  let bestDist = Infinity;
 		  let bestLine = null;
@@ -2101,7 +2101,8 @@ function sleep(ms){
 
 					  const snap = snapToNextRiver(
 					    { lat: current.lat, lng: current.lng },
-					    riverLine
+					    riverLine,
+  						lastPoint
 					  );
 					
 					  if (!snap) {
