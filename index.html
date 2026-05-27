@@ -1843,35 +1843,36 @@ function sleep(ms){
               // ✅ Følg elv punkt-for-punkt
              if (onRiver) {
 
-  const nextRiver = await getNextDownstreamPoint(
-    [current.lat, current.lng],
-    lastPoint,
-    visited
-  );
-
-  if (!nextRiver) {
-    console.log("ELV STOP");
-    break;
-  }
-
-  const dMove = distMeters(
-    { lat: current.lat, lng: current.lng },
-    nextRiver
-  );
-
-  if (dMove >= 2) {   // ✅ flyttet inni if
-    lastPoint = [current.lat, current.lng];
-
-    current = {
-      lat: nextRiver[0],
-      lng: nextRiver[1],
-    };
-
-    path.push([current.lat, current.lng, "river"]);
-  }
-
-  continue;   // ✅ ALLTID continue – uansett
-}
+				  const nextRiver = await getNextDownstreamPoint(
+				    [current.lat, current.lng],
+				    lastPoint,
+				    visited
+				  );
+				
+				  if (!nextRiver) {
+				    console.log("ELV STOP");
+				    break;
+				  }
+				
+				  const dMove = distMeters(
+				    { lat: current.lat, lng: current.lng },
+				    nextRiver
+				  );
+				
+				  if (dMove >= 2) {   // ✅ flyttet inni if
+				    lastPoint = [current.lat, current.lng];
+				
+				    current = {
+				      lat: nextRiver[0],
+				      lng: nextRiver[1],
+				    };
+					poly.addLatLng([current.lat, current.lng]);
+				
+				    path.push([current.lat, current.lng, "river"]);
+				  }
+				
+				  continue;   // ✅ ALLTID continue – uansett
+				}
             
 
 			// await connectFlowsToWater(poly);
