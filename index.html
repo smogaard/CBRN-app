@@ -2350,6 +2350,12 @@ function sleep(ms){
 
 				 
 				 if (!riverLine || riverIndex === -1) break;
+				 
+				if (!riverLine || riverLine.length === 0) {
+				  console.log("FEIL: riverLine undefined");
+				  break;
+				}
+
 				
 				  let nextIndex = riverIndex + 1;
 				
@@ -2400,7 +2406,7 @@ function sleep(ms){
 						}
 						
 						// ✅ 2: større radius
-						const snapFar = snapToNextRiver(
+						const snapFar = await snapToNextRiver(
 						  { lat: current.lat, lng: current.lng },
 						  segmentId,
 						  lastPoint,
@@ -2449,8 +2455,13 @@ function sleep(ms){
 				  }
 				
 				  const next = riverLine[nextIndex];
-				 	
-					if (
+
+				 	if (!next) {
+					  console.log("FEIL: next undefined");
+					  break;
+					}
+
+				 	if (
 					  Math.abs(next[1] - current.lat) < 0.000001 &&
 					  Math.abs(next[0] - current.lng) < 0.000001
 					) {
