@@ -2385,13 +2385,18 @@ function sleep(ms){
 						  console.log("FOR MANGE HOPP – GIR SEG");
 						  break;
 						}
-					  
-					  
+						
+						const allowBacktracking =
+						  loopCount > 0 || cameFromFallback || cameFromSnap;
+						
 						const snap = await snapToNextRiver(
 						  { lat: current.lat, lng: current.lng },
 						  segmentId,
-						  lastPoint
+						  lastPoint,
+						  40,
+						  allowBacktracking
 						);
+
 						
 						// ✅ 1: vanlig hopp
 						if (snap && snap.point) {
