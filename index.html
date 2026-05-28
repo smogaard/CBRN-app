@@ -2114,6 +2114,7 @@ function sleep(ms){
 			let processedRiverSegments = new Set();
 			let cameFromFallback = false;
 			let cameFromSnap = false;
+			let stepsSinceSnap = 1000;
 			
 			
 
@@ -2130,7 +2131,10 @@ function sleep(ms){
             const visited = new Set();
 
             for (let i = 0; i < 1500; i++) {
-              const key = current.lat.toFixed(5) + "," + current.lng.toFixed(5);
+				
+			  stepsSinceSnap++;
+              
+			  const key = current.lat.toFixed(5) + "," + current.lng.toFixed(5);
               visited.add(
                 current.lat.toFixed(6) + "," + current.lng.toFixed(6),
               );
@@ -2337,6 +2341,8 @@ function sleep(ms){
 				    );
 				
 				    if (snap && snap.point) {
+						
+						stepsSinceSnap = 0;
 											
 					    if (snap.segmentId === segmentId) {
 						  console.log("DROP (retry) – samme segment");
@@ -2396,6 +2402,23 @@ function sleep(ms){
 				
 				  if (nextIndex >= riverLine.length) {
 					  
+					if (stepsSinceSnap < 5) {
+					  // prøv heller DEM i stedet for ny snap
+					  const forward = await getSteepestDirectionDEM(
+					    current.lat,
+					    current.lng,
+					    40
+					  );
+					
+					  if (forward) {
+					    current = forward;
+					    onRiver = false;
+					    continue;
+					  }
+					
+					  continue;
+					}
+				  
 					  
 					if (hits >= 2) {
 					  hopAttempts++;
@@ -2418,6 +2441,7 @@ function sleep(ms){
 						
 						// ✅ 1: vanlig hopp
 						if (snap && snap.point) {
+							  stepsSinceSnap = 0;
 							
 							  if (snap.segmentId === segmentId) {
 								  console.log("DROP – samme segment etter snap");
@@ -2465,6 +2489,8 @@ function sleep(ms){
 						);
 						
 						if (snapFar && snapFar.point) {
+							
+							stepsSinceSnap = 0;
 							
 						    if (snapFar.segmentId === segmentId) {
 							  console.log("DROP (extended) – samme segment");
