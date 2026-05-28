@@ -2522,7 +2522,7 @@ function sleep(ms){
             const next = await getSteepestDirectionDEM(
               current.lat,
               current.lng,
-              10,
+              10
             );
 
            
@@ -2559,7 +2559,7 @@ function sleep(ms){
                   current.lat,
                   current.lng,
                   (d * Math.PI) / 180,
-                  40,
+                  40
                 );
 
                 const h = await getElevationCached(p.lat, p.lng);
@@ -2576,7 +2576,7 @@ function sleep(ms){
                 const next2 = await getSteepestDirectionDEM(
                   current.lat,
                   current.lng,
-                  80,
+                  80
                 );
 
                 if (!next2) break;
