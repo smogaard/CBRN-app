@@ -1409,7 +1409,23 @@ function sleep(ms){
 		      for (let line of lines) {
 		
 		        // ✅ hopp over samme linje
-		        if (line === currentLine) continue;
+		        
+				if (currentLine && line.length === currentLine.length) {
+				  let same = true;
+				
+				  for (let k = 0; k < line.length; k++) {
+				    if (
+				      line[k][0] !== currentLine[k][0] ||
+				      line[k][1] !== currentLine[k][1]
+				    ) {
+				      same = false;
+				      break;
+				    }
+				  }
+				
+				  if (same) continue;
+				}
+
 		
 		        for (let i = 0; i < line.length; i++) {
 		          const pt = [line[i][1], line[i][0]];
@@ -1978,6 +1994,9 @@ function sleep(ms){
 			let riverIndex = -1;
             let riverVisited = new Set();
             let lastPoint = null;
+			let lastDist = Infinity;
+			let stuckCounter = 0;
+
 
             const path = [];
 
