@@ -2315,13 +2315,16 @@ function sleep(ms){
 				
 				  // ✅ maks ett nytt forsøk
 				  if (loopCount <= 1) {
+
+					const allowBacktracking =
+					    loopCount > 0 || cameFromFallback || cameFromSnap;
 				
 				    const snap = await snapToNextRiver(
 				      { lat: current.lat, lng: current.lng },
 				      segmentId,
 				      lastPoint,
-				      120
-					  cameFromFallback || cameFromSnap
+				      120,
+					  allowBacktracking
 				    );
 				
 				    if (snap && snap.point) {
@@ -2417,12 +2420,17 @@ function sleep(ms){
 						}
 						
 						// ✅ 2: større radius
+	
+						const allowBacktracking =
+						  loopCount > 0 || cameFromFallback || cameFromSnap;
+
+					  
 						const snapFar = await snapToNextRiver(
 						  { lat: current.lat, lng: current.lng },
 						  segmentId,
 						  lastPoint,
-						  120
-						  cameFromFallback || cameFromSnap
+						  120,
+						  allowBacktracking
 						);
 						
 						if (snapFar && snapFar.point) {
