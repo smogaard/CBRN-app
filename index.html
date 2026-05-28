@@ -2199,27 +2199,37 @@ function sleep(ms){
               // ✅ Følg elv punkt-for-punkt
              if (onRiver) { 
 				
-				const segmentKey = segmentId + "_" + riverIndex;
-				
-				// ✅ hvis vi allerede har vært her → stopp
-				
-				if (processedRiverSegments.has(segmentKey)) {
+				const segmentKey = segmentId;
 
-				  if (cameFromFallback || cameFromSnap) {
-				    console.log("TILLATER REENTRY ETTER HOPP ✅");
-				    cameFromFallback = false;
-				    cameFromSnap = false;
-				  } else {
-				    console.log("ALLEREDE PROSESSERT ELV – STOPPER");
-				    break;
+				// ✅ kun segment-nivå
+				if (processedRiverSegments.has(segmentKey)) {
+				
+				  // ✅ hvis vi faktisk beveger oss videre i segmentet → tillat
+				  if (lastPoint) {
+				
+				    const moveDist = distMeters(
+				      { lat: lastPoint[0], lng: lastPoint[1] },
+				      [current.lat, current.lng]
+				    );
+				
+				    if (moveDist > 2) {
+				      // vi beveger oss → OK
+				    } else if (cameFromFallback || cameFromSnap) {
+				      console.log("TILLATER REENTRY ETTER HOPP ✅");
+				      cameFromFallback = false;
+				      cameFromSnap = false;
+				    } else {
+				      console.log("STOPP – ingen fremgang");
+				      break;
+				    }
+				
 				  }
 				
 				}
-
 				
-				// ✅ marker som besøkt
+				// ✅ marker kun segment (ikke index)
 				processedRiverSegments.add(segmentKey);
-
+				 
 				const key =
 				  current.lat.toFixed(5) + "," + current.lng.toFixed(5);
 				
