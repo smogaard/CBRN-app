@@ -1383,7 +1383,7 @@ function sleep(ms){
       }
 
 
-		function snapToNextRiver(current, currentLine, lastPoint) {
+		function snapToNextRiver(current, currentLine, lastPoint, maxDist = 40) {
 		  let best = null;
 		  let bestDist = Infinity;
 		  let bestLine = null;
@@ -1427,7 +1427,7 @@ function sleep(ms){
 				    }
 
 					
-		          if (d < bestDist && d < 40) {   // ✅ radius
+		          if (d < bestDist && d < maxDist) {   // ✅ radius
 		            bestDist = d;
 		            best = pt;
 		            bestLine = line;
@@ -2146,9 +2146,33 @@ function sleep(ms){
 					  );
 					
 					  if (!snap) {
-					    console.log("ELV END → ingen ny elv funnet");
+
+					  console.log("PRØVER UTVIDET ELV-SNAP");
+					
+					  const snapFar = snapToNextRiver(
+					    { lat: current.lat, lng: current.lng },
+					    riverLine,
+					    lastPoint,
+					    120   // ✅ større radius kun her
+					  );
+					
+					  if (!snapFar) {
+					    console.log("ELV NETTVERK SLUTT");
 					    break;
 					  }
+					
+					  riverLine = snapFar.line;
+					  riverIndex = snapFar.index;
+					
+					  current = {
+					    lat: snapFar.point[0],
+					    lng: snapFar.point[1]
+					  };
+					
+					  poly.addLatLng([current.lat, current.lng]);
+					
+					  continue;
+					}
 					
 					  console.log("HOPPER TIL NY ELV");
 					
