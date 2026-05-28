@@ -2051,6 +2051,7 @@ function sleep(ms){
 			let recentPositions = []
 			let processedRiverSegments = new Set();
 			let cameFromFallback = false;
+			let cameFromSnap = false;
 
             const path = [];
 
@@ -2318,6 +2319,8 @@ function sleep(ms){
 						    lng: snap.point[1]
 						  };
 						
+						  cameFromSnap = true;   // ✅ NY
+						
 						  poly.addLatLng([current.lat, current.lng]);
 						  continue;
 						}
@@ -2342,7 +2345,9 @@ function sleep(ms){
 						    lat: snapFar.point[0],
 						    lng: snapFar.point[1]
 						  };
-						
+
+						  cameFromSnap = true;
+							
 						  poly.addLatLng([current.lat, current.lng]);
 						  continue;
 						}
