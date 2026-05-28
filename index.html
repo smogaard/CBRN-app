@@ -2261,6 +2261,17 @@ function sleep(ms){
 				  loopCount++;
 				
 				  console.log("LOOP DETECTED (3x):", loopCount);
+
+
+				if (lastSegmentId !== null && segmentId !== null) {
+				
+				  const transitionKey =
+				    lastSegmentId + "→" + segmentId;
+				
+				  failedTransitions.add(transitionKey);
+				
+				  console.log("BLACKLIST transition:", transitionKey);
+					
 				
 				  // ✅ maks ett nytt forsøk
 				  if (loopCount <= 1) {
