@@ -181,6 +181,8 @@ function sleep(ms){
       let loadedTiles = {};
       let gridLayer;
 	  let processedRiverSegments = new Set();
+	  
+	  const failedTransitions = new Set();
 
       const SNAP_DIST = 50; // distanse i meter
 
@@ -2052,8 +2054,7 @@ function sleep(ms){
           const startPoints = generateStartPoints(pos, 30, 12);
           const layers = [];
 
-          const failedTransitions = new Set();
-			
+          			
 		  for (const start of startPoints) {
 			
 		  await new Promise(requestAnimationFrame);
