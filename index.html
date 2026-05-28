@@ -1445,9 +1445,10 @@ function sleep(ms){
 		          const pt = [line[i][1], line[i][0]];
 
 				  
+				  
 				  const transitionKey =
-					  currentSegmentId + "_" + (lastPoint ? "1" : "0") + "→" +
-					  f.properties.fid + "_" + i;
+				    currentSegmentId + "→" + f.properties.fid;
+				
 					
 				  if (failedTransitions.has(transitionKey)) {
 					  continue;
