@@ -1386,7 +1386,7 @@ function sleep(ms){
       }
 
 
-		async function snapToNextRiver(current, currentSegmentId, lastPoint, maxDist = 40) {
+		async function snapToNextRiver(current, currentSegmentId, lastPoint, maxDist = 40, allowBacktracking = false) {
 		
 		  let best = null;
 		  let bestScore = -Infinity;
@@ -1497,6 +1497,12 @@ function sleep(ms){
 
 		
 		              directionScore = dot;
+
+					  
+					if (allowBacktracking) {
+					    directionScore += Math.abs(dot) * 20;
+					  }
+
 		            }
 		          }
 		
@@ -2315,6 +2321,7 @@ function sleep(ms){
 				      segmentId,
 				      lastPoint,
 				      120
+					  cameFromFallback || cameFromSnap
 				    );
 				
 				    if (snap && snap.point) {
@@ -2415,6 +2422,7 @@ function sleep(ms){
 						  segmentId,
 						  lastPoint,
 						  120
+						  cameFromFallback || cameFromSnap
 						);
 						
 						if (snapFar && snapFar.point) {
