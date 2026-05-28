@@ -1383,11 +1383,12 @@ function sleep(ms){
       }
 
 
-		function snapToNextRiver(current, currentLine, lastPoint, maxDist = 40) {
+		function snapToNextRiver(current, currentRiverId, lastPoint, maxDist = 40) {
 		  let best = null;
 		  let bestDist = Infinity;
 		  let bestLine = null;
 		  let bestIndex = -1;
+		  let bestFeature = null;
 		
 		  for (let key in loadedTiles) {
 		    if (!key.startsWith("elvis")) continue;
@@ -1396,6 +1397,7 @@ function sleep(ms){
 		    if (!data) continue;
 		
 		    for (let f of data.features) {
+			  if (f.properties.elvID === currentRiverId) continue;
 		      const geom = f.geometry;
 				console.log("FEATURE PROPERTIES:", f.properties)
 		      if (!geom) continue;
@@ -1432,7 +1434,10 @@ function sleep(ms){
 		          const pt = [line[i][1], line[i][0]];
 		
 		          const d = distMeters(current, pt);
-
+					
+					// ❌ ikke velg samme punkt igjen
+					if (d < 1) continue;
+					
 					let directionScore = 0;
 					
 					if (lastPoint) {
@@ -1476,13 +1481,14 @@ function sleep(ms){
 		         
 					const score = -d + directionScore * 50;
 					
+					
 					if (score > bestDist && d < maxDist) {
 					  bestDist = score;
 					  best = pt;
 					  bestLine = line;
 					  bestIndex = i;
+					  bestFeature = f;
 					}
-
 		        }
 		      }
 		    }
@@ -1493,7 +1499,8 @@ function sleep(ms){
 		  return {
 		    point: best,
 		    line: bestLine,
-		    index: bestIndex
+		    index: bestIndex,
+			riverId: bestFeature.properties.elvID
 		  };
 		}
 
@@ -2026,6 +2033,7 @@ function sleep(ms){
             let onRiver = false;
 			let riverLine = null;
 			let riverIndex = -1;
+			let riverId = null;
             let riverVisited = new Set();
             let lastPoint = null;
 			let lastDist = Infinity;
@@ -2111,6 +2119,7 @@ function sleep(ms){
 				
 				    riverLine = snap.line;
 				    riverIndex = snap.index;
+					riverId = snap.riverId;
 				
 				    onRiver = true;
 				
@@ -2131,6 +2140,7 @@ function sleep(ms){
 				  let bestLine = null;
 				  let bestIndex = -1;
 				  let bestDist = Infinity;
+				  let bestFeature = null; 
 				
 				  for (let key in loadedTiles) {
 				    if (!key.startsWith("elvis")) continue;
@@ -2155,20 +2165,27 @@ function sleep(ms){
 				
 				          const d = distMeters(current, pt);
 				
-				          if (d < bestDist) {
-				            bestDist = d;
-				            bestLine = line;
-				            bestIndex = i;
-				          }
+				          
+							if (d < bestDist) {
+							  bestDist = d;
+							  bestLine = line;
+							  bestIndex = i;
+							  bestFeature = f;
+							}
+
 				        }
 				      }
 				    }
 				  }
 				
-				  if (!bestLine) break;
-				
-				  riverLine = bestLine;
-				  riverIndex = bestIndex;
+				  
+					if (!bestLine) break;
+					
+					riverLine = bestLine;
+					riverIndex = bestIndex;
+					riverId = bestFeature.properties.elvID;
+
+				  
 				
 				  current = {
 				    lat: riverLine[riverIndex][1],
@@ -2208,11 +2225,13 @@ function sleep(ms){
 						  break;
 						}
 					  
-					  const snap = snapToNextRiver(
-					    { lat: current.lat, lng: current.lng },
-					    riverLine,
-  						lastPoint
-					  );
+					  
+						const snap = snapToNextRiver(
+						  { lat: current.lat, lng: current.lng },
+						  riverId,   // ✅ IKKE riverLine lenger
+						  lastPoint
+						);
+
 					
 					  if (!snap) {
 
@@ -2220,7 +2239,7 @@ function sleep(ms){
 					
 					  const snapFar = snapToNextRiver(
 					    { lat: current.lat, lng: current.lng },
-					    riverLine,
+					    riverId,
 					    lastPoint,
 					    120   // ✅ større radius kun her
 					  );
