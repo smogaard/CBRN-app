@@ -2041,6 +2041,7 @@ function sleep(ms){
 			let lastDist = Infinity;
 			let stuckCounter = 0;
 			let hopAttempts = 0;
+			let loopCount = 0;
 
             const path = [];
 
@@ -2168,6 +2169,7 @@ function sleep(ms){
 				  path.push([current.lat, current.lng, "river"]);
 				
 				  onRiver = true;
+				  loopCount = 0;
 				  continue;
 				}
               }
@@ -2179,30 +2181,56 @@ function sleep(ms){
 				
 				
 				if (riverVisited.has(riverKey)) {
-				  console.log("LOOP DETECTED – HOPPER VIDERE");
+
+				  loopCount++;
 				
-				  const snap = snapToNextRiver(
-				    { lat: current.lat, lng: current.lng },
-				    segmentId,
-				    lastPoint,
-				    150
+				  console.log("LOOP DETECTED:", loopCount);
+				
+				  // ✅ 1: prøv vanlig hopp et par ganger
+				  if (loopCount < 3) {
+				
+				    const snap = snapToNextRiver(
+				      { lat: current.lat, lng: current.lng },
+				      segmentId,
+				      lastPoint,
+				      120
+				    );
+				
+				    if (snap) {
+				      riverLine = snap.line;
+				      riverIndex = snap.index;
+				      segmentId = snap.segmentId;
+				
+				      current = {
+				        lat: snap.point[0],
+				        lng: snap.point[1]
+				      };
+				
+				      continue;
+				    }
+				  }
+				
+				  // ✅ 2: TVUNGET FREMMOVER (kritisk fix)
+				  console.log("FORBI-LOOP HOPP");
+				
+				  const forward = await getSteepestDirectionDEM(
+				    current.lat,
+				    current.lng,
+				    60
 				  );
 				
-				  if (snap) {
-				    riverLine = snap.line;
-				    riverIndex = snap.index;
-				    segmentId = snap.segmentId;
-				
-				    current = {
-				      lat: snap.point[0],
-				      lng: snap.point[1]
-				    };
-				
+				  if (forward) {
+				    current = forward;
+				    onRiver = false;   // ← viktig: gå ut av river-mode
+				    loopCount = 0;
 				    continue;
 				  }
 				
-				  // hvis ingenting funker → la den gå videre én node
+				  // ✅ 3: absolut siste fallback
+				  console.log("LOOP – GIR OPP");
+				  break;
 				}
+
 
 				
 				riverVisited.add(riverKey);
@@ -2229,7 +2257,7 @@ function sleep(ms){
 						
 						// ✅ 1: vanlig hopp
 						if (snap) {
-						
+						  loopCount = 0;
 						  console.log("HOPPER TIL NY ELV");
 						
 						  riverLine = snap.line;
@@ -2254,7 +2282,7 @@ function sleep(ms){
 						);
 						
 						if (snapFar) {
-						
+						  loopCount = 0;
 						  console.log("UTVIDET HOPP");
 						
 						  riverLine = snapFar.line;
