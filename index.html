@@ -2117,6 +2117,7 @@ function sleep(ms){
 			let cameFromFallback = false;
 			let cameFromSnap = false;
 			let stepsSinceSnap = 1000;
+			let stepsSinceRiver = 1000;
 			
 			
 
@@ -2134,6 +2135,7 @@ function sleep(ms){
 
             for (let i = 0; i < 1500; i++) {
 				
+			  stepsSinceRiver++;
 			  stepsSinceSnap++;
               
 			  const key = current.lat.toFixed(5) + "," + current.lng.toFixed(5);
@@ -2263,7 +2265,8 @@ function sleep(ms){
               }
 
               // ✅ Følg elv punkt-for-punkt
-             if (onRiver) { 
+             if (onRiver) {
+				 stepsSinceRiver = 0;
 				
 				const allowBacktracking =
 				    loopCount > 0 || cameFromFallback || cameFromSnap;
