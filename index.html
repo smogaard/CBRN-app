@@ -1383,7 +1383,7 @@ function sleep(ms){
       }
 
 
-		function snapToNextRiver(current, currentRiverId, lastPoint, maxDist = 40) {
+		function snapToNextRiver(current, currentSegmentId, lastPoint, maxDist = 40) {
 		  let best = null;
 		  let bestDist = Infinity;
 		  let bestLine = null;
@@ -1397,7 +1397,7 @@ function sleep(ms){
 		    if (!data) continue;
 		
 		    for (let f of data.features) {
-			  if (f.properties.elvID === currentRiverId) continue;
+			  if (f.properties.fid === currentSegmentId) continue;
 		      const geom = f.geometry;
 				console.log("FEATURE PROPERTIES:", f.properties)
 		      if (!geom) continue;
@@ -1417,7 +1417,7 @@ function sleep(ms){
 		          const d = distMeters(current, pt);
 					
 					// ❌ ikke velg samme punkt igjen
-					if (d < 1) continue;
+					if (d < 3) continue;
 					
 					let directionScore = 0;
 					
@@ -1481,7 +1481,7 @@ function sleep(ms){
 		    point: best,
 		    line: bestLine,
 		    index: bestIndex,
-			riverId: bestFeature.properties.elvID
+			segmentId: bestFeature.properties.fid
 		  };
 		}
 
@@ -2014,7 +2014,7 @@ function sleep(ms){
             let onRiver = false;
 			let riverLine = null;
 			let riverIndex = -1;
-			let riverId = null;
+			let segmentId = null;
             let riverVisited = new Set();
             let lastPoint = null;
 			let lastDist = Infinity;
@@ -2100,7 +2100,7 @@ function sleep(ms){
 				
 				    riverLine = snap.line;
 				    riverIndex = snap.index;
-					riverId = snap.riverId;
+					segmentId = snap.segmentId;
 				
 				    onRiver = true;
 				
@@ -2164,7 +2164,7 @@ function sleep(ms){
 					
 					riverLine = bestLine;
 					riverIndex = bestIndex;
-					riverId = bestFeature.properties.elvID;
+					segmentId = bestFeature.properties.fid;
 
 				  
 				
@@ -2209,7 +2209,7 @@ function sleep(ms){
 					  
 						const snap = snapToNextRiver(
 						  { lat: current.lat, lng: current.lng },
-						  riverId,   // ✅ IKKE riverLine lenger
+						  segmentId, 
 						  lastPoint
 						);
 
@@ -2220,7 +2220,7 @@ function sleep(ms){
 					
 					  const snapFar = snapToNextRiver(
 					    { lat: current.lat, lng: current.lng },
-					    riverId,
+					    segmentId,
 					    lastPoint,
 					    120   // ✅ større radius kun her
 					  );
@@ -2232,6 +2232,7 @@ function sleep(ms){
 					
 					  riverLine = snapFar.line;
 					  riverIndex = snapFar.index;
+					  segmentId = snapFar.segmentId
 					
 					  current = {
 					    lat: snapFar.point[0],
@@ -2247,6 +2248,7 @@ function sleep(ms){
 					
 					  riverLine = snap.line;
 					  riverIndex = snap.index;
+					  segmentId = snap.segmentId
 					
 					  current = {
 					    lat: snap.point[0],
