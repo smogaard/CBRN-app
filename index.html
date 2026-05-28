@@ -1397,9 +1397,44 @@ function sleep(ms){
 		    if (!data) continue;
 		
 		    for (let f of data.features) {
+
+				// ✅ FINN NODE VI STÅR PÅ
+				const nodeKey =
+				  current.lat.toFixed(6) + "," + current.lng.toFixed(6);
+				
+				// ✅ SJEKK OM SEGMENT DELER DENNE NODEN
+				const geomCheck = f.geometry;
+				if (!geomCheck) continue;
+				
+				const linesCheck =
+				  geomCheck.type === "LineString"
+				    ? [geomCheck.coordinates]
+				    : geomCheck.type === "MultiLineString"
+				    ? geomCheck.coordinates
+				    : [];
+				
+				let sharesNode = false;
+				
+				for (let lineCheck of linesCheck) {
+				  for (let ptRaw of lineCheck) {
+				    const key =
+				      ptRaw[1].toFixed(6) + "," + ptRaw[0].toFixed(6);
+				
+				    if (key === nodeKey) {
+				      sharesNode = true;
+				      break;
+				    }
+				  }
+				  if (sharesNode) break;
+				}
+				
+				// ❌ HOPP OVER ALT SOM IKKE ER KOBLET
+				if (!sharesNode) continue;
+
+			
 			  if (f.properties.fid === currentSegmentId) continue;
 		      const geom = f.geometry;
-				console.log("FEATURE PROPERTIES:", f.properties)
+																		//console.log("FEATURE PROPERTIES:", f.properties)
 		      if (!geom) continue;
 		
 		      const lines =
