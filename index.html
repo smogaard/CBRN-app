@@ -1492,9 +1492,11 @@ function sleep(ms){
 		
 		              // ❌ blokkér bakover
 		              
-					if (dot < -0.9 && !cameFromFallback && !cameFromSnap) {
-					  continue;
-					}
+					
+						if (dot < -0.9 && !allowBacktracking) {
+						  continue;
+						}
+
 
 		
 		              directionScore = dot;
