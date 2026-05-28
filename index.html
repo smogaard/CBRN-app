@@ -2025,10 +2025,50 @@ function sleep(ms){
               const stream = findNearestStream(current);
 
               if (stream) {
-                const d = distMeters(current, stream);
-                console.log("Dist til nærmeste elv:", d);
-              }
+				  const d = distMeters(current, stream);
+				
+				  console.log("Dist til nærmeste elv:", d);
+				
+				  // ✅ DETEKTER OM VI STÅR FAST
+				  if (d >= lastDist - 1) {
+				    stuckCounter++;
+				  } else {
+				    stuckCounter = 0;
+				  }
+				
+				  lastDist = d;
+				}
 
+				// ✅ DESPERAT SNAP hvis vi sitter fast
+				if (!onRiver && stuckCounter > 15) {
+				
+				  console.log("DESPERAT SNAP AKTIVERT");
+				
+				  const snap = snapToNextRiver(
+				    { lat: current.lat, lng: current.lng },
+				    null,   // ikke ekskluder linje
+				    lastPoint
+				  );
+				
+				  if (snap) {
+				    current = {
+				      lat: snap.point[0],
+				      lng: snap.point[1]
+				    };
+				
+				    riverLine = snap.line;
+				    riverIndex = snap.index;
+				
+				    onRiver = true;
+				
+				    poly.addLatLng([current.lat, current.lng]);
+				    path.push([current.lat, current.lng, "river"]);
+				
+				    continue;
+				  }
+				}
+
+				
               if (stream) {
                 const distHere = distMeters(current, stream);
 
