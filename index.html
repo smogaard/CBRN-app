@@ -2036,12 +2036,12 @@ function sleep(ms){
 			let riverLine = null;
 			let riverIndex = -1;
 			let segmentId = null;
-            let riverVisited = new Set();
             let lastPoint = null;
 			let lastDist = Infinity;
 			let stuckCounter = 0;
 			let hopAttempts = 0;
 			let loopCount = 0;
+			let recentPositions = []
 
             const path = [];
 
@@ -2176,18 +2176,28 @@ function sleep(ms){
 
               // ✅ Følg elv punkt-for-punkt
              if (onRiver) {  
-				const riverKey =
+				cconst key =
 				  current.lat.toFixed(5) + "," + current.lng.toFixed(5);
 				
+				// ✅ legg til i historikk
+				recentPositions.push(key);
 				
-				if (riverVisited.has(riverKey)) {
-
+				// behold kun siste 5
+				if (recentPositions.length > 5) {
+				  recentPositions.shift();
+				}
+				
+				// ✅ tell hvor mange ganger samme punkt dukker opp
+				let hits = recentPositions.filter(k => k === key).length;
+				
+				if (hits >= 3) {
+				
 				  loopCount++;
 				
-				  console.log("LOOP DETECTED:", loopCount);
+				  console.log("LOOP DETECTED (3x):", loopCount);
 				
-				  // ✅ 1: prøv vanlig hopp et par ganger
-				  if (loopCount < 3) {
+				  // ✅ maks ett nytt forsøk
+				  if (loopCount <= 1) {
 				
 				    const snap = snapToNextRiver(
 				      { lat: current.lat, lng: current.lng },
@@ -2210,31 +2220,27 @@ function sleep(ms){
 				    }
 				  }
 				
-				  // ✅ 2: TVUNGET FREMMOVER (kritisk fix)
-				  console.log("FORBI-LOOP HOPP");
+				  // ✅ bryt ut av loop
+				  console.log("FORBI-LOOP → DEM");
 				
 				  const forward = await getSteepestDirectionDEM(
 				    current.lat,
 				    current.lng,
-				    60
+				    80
 				  );
 				
 				  if (forward) {
 				    current = forward;
-				    onRiver = false;   // ← viktig: gå ut av river-mode
+				    onRiver = false;
 				    loopCount = 0;
+				    recentPositions = [];
 				    continue;
 				  }
 				
-				  // ✅ 3: absolut siste fallback
-				  console.log("LOOP – GIR OPP");
 				  break;
 				}
 
-
-				
-				riverVisited.add(riverKey);
-
+				 
 				 if (!riverLine || riverIndex === -1) break;
 				
 				  let nextIndex = riverIndex + 1;
