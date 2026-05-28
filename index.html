@@ -2200,10 +2200,11 @@ function sleep(ms){
 				// ✅ hvis vi allerede har vært her → stopp
 				
 				if (processedRiverSegments.has(segmentKey)) {
-				
-				  if (cameFromFallback) {
-				    console.log("TILLATER REENTRY ETTER FALLBACK ✅");
-				    cameFromFallback = false; // reset
+
+				  if (cameFromFallback || cameFromSnap) {
+				    console.log("TILLATER REENTRY ETTER HOPP ✅");
+				    cameFromFallback = false;
+				    cameFromSnap = false;
 				  } else {
 				    console.log("ALLEREDE PROSESSERT ELV – STOPPER");
 				    break;
