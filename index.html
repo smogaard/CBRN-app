@@ -1384,8 +1384,9 @@ function sleep(ms){
 
 
 		function snapToNextRiver(current, currentSegmentId, lastPoint, maxDist = 40) {
+		
 		  let best = null;
-		  let bestDist = Infinity;
+		  let bestScore = -Infinity;
 		  let bestLine = null;
 		  let bestIndex = -1;
 		  let bestFeature = null;
@@ -1397,61 +1398,11 @@ function sleep(ms){
 		    if (!data) continue;
 		
 		    for (let f of data.features) {
-
-				// ✅ FINN NODE VI STÅR PÅ
-				
-				let sharesNode = false;
-				
-				for (let lineCheck of linesCheck) {
-				  for (let ptRaw of lineCheck) {
-				
-				    const pt = [ptRaw[1], ptRaw[0]];
-				
-				    // ✅ TOLERANSE i meter (VELDIG viktig)
-				    if (distMeters(current, pt) < 5) {
-				      sharesNode = true;
-				      break;
-				    }
-				  }
-				  if (sharesNode) break;
-				}
-				
-				if (!sharesNode) continue;
-
-				
-				// ✅ SJEKK OM SEGMENT DELER DENNE NODEN
-				const geomCheck = f.geometry;
-				if (!geomCheck) continue;
-				
-				const linesCheck =
-				  geomCheck.type === "LineString"
-				    ? [geomCheck.coordinates]
-				    : geomCheck.type === "MultiLineString"
-				    ? geomCheck.coordinates
-				    : [];
-				
-				let sharesNode = false;
-				
-				for (let lineCheck of linesCheck) {
-				  for (let ptRaw of lineCheck) {
-				    const key =
-				      ptRaw[1].toFixed(6) + "," + ptRaw[0].toFixed(6);
-				
-				    if (key === nodeKey) {
-				      sharesNode = true;
-				      break;
-				    }
-				  }
-				  if (sharesNode) break;
-				}
-				
-				// ❌ HOPP OVER ALT SOM IKKE ER KOBLET
-				if (!sharesNode) continue;
-
-			
-			  if (f.properties.fid === currentSegmentId) continue;
+		
+		      // ✅ ekskluder segmentet vi står på
+		      if (f.properties.fid === currentSegmentId) continue;
+		
 		      const geom = f.geometry;
-																		//console.log("FEATURE PROPERTIES:", f.properties)
 		      if (!geom) continue;
 		
 		      const lines =
@@ -1461,67 +1412,85 @@ function sleep(ms){
 		          ? geom.coordinates
 		          : [];
 		
-		      for (let line of lines) {
+		      // ✅ sjekk om segment ligger nær current (NODE-KOBLING MED TOLERANSE)
+		      let sharesNode = false;
 		
-		          for (let i = 0; i < line.length; i++) {
+		      for (let lineCheck of lines) {
+		        for (let ptRaw of lineCheck) {
+		          const pt = [ptRaw[1], ptRaw[0]];
+		
+		          if (distMeters(current, pt) < 5) {
+		            sharesNode = true;
+		            break;
+		          }
+		        }
+		        if (sharesNode) break;
+		      }
+		
+		      if (!sharesNode) continue;
+		
+		      // ✅ vurder kandidater i linja
+		      for (let line of lines) {
+		        for (let i = 0; i < line.length; i++) {
+		
 		          const pt = [line[i][1], line[i][0]];
 		
 		          const d = distMeters(current, pt);
-					
-					// ❌ ikke velg samme punkt igjen
-					if (d < 3) continue;
-					
-					let directionScore = 0;
-					
-					if (lastPoint) {
-					
-					  const dir = [
-					    current.lat - lastPoint[0],
-					    current.lng - lastPoint[1]
-					  ];
-					
-					  const v = [
-					    pt[0] - current.lat,
-					    pt[1] - current.lng
-					  ];
-					
-					  const len1 = Math.hypot(dir[0], dir[1]);
-					  const len2 = Math.hypot(v[0], v[1]);
-					
-					  if (len1 > 0 && len2 > 0) {
-					    const dot =
-					      (dir[0] / len1) * (v[0] / len2) +
-					      (dir[1] / len1) * (v[1] / len2);
-					
-					    directionScore = dot;
-					
-					    // ❌ fjern bakover
-					    if (dot < 0.3) continue;
-					  }
-					}
-
-					
-				   if (lastPoint) {
-				      const dPrev = distMeters(
-				        { lat: lastPoint[0], lng: lastPoint[1] },
-				        pt
-				      );
-				
-				      if (dPrev < 5) continue;
-				    }
-
-					
-		         
-					const score = -d + directionScore * 50;
-					
-					
-					if (score > bestDist && d < maxDist) {
-					  bestDist = score;
-					  best = pt;
-					  bestLine = line;
-					  bestIndex = i;
-					  bestFeature = f;
-					}
+		
+		          // ❌ ikke samme punkt
+		          if (d < 3) continue;
+		
+		          // ❌ for langt unna
+		          if (d > maxDist) continue;
+		
+		          let directionScore = 0;
+		
+		          if (lastPoint) {
+		            const dir = [
+		              current.lat - lastPoint[0],
+		              current.lng - lastPoint[1]
+		            ];
+		
+		            const v = [
+		              pt[0] - current.lat,
+		              pt[1] - current.lng
+		            ];
+		
+		            const len1 = Math.hypot(dir[0], dir[1]);
+		            const len2 = Math.hypot(v[0], v[1]);
+		
+		            if (len1 > 0 && len2 > 0) {
+		              const dot =
+		                (dir[0] / len1) * (v[0] / len2) +
+		                (dir[1] / len1) * (v[1] / len2);
+		
+		              // ❌ blokkér bakover
+		              if (dot < 0.3) continue;
+		
+		              directionScore = dot;
+		            }
+		          }
+		
+		          // ❌ ikke gå tilbake til forrige punkt
+		          if (lastPoint) {
+		            const dPrev = distMeters(
+		              { lat: lastPoint[0], lng: lastPoint[1] },
+		              pt
+		            );
+		
+		            if (dPrev < 5) continue;
+		          }
+		
+		          // ✅ score
+		          const score = -d + directionScore * 50;
+		
+		          if (score > bestScore) {
+		            bestScore = score;
+		            best = pt;
+		            bestLine = line;
+		            bestIndex = i;
+		            bestFeature = f;
+		          }
 		        }
 		      }
 		    }
@@ -1533,7 +1502,7 @@ function sleep(ms){
 		    point: best,
 		    line: bestLine,
 		    index: bestIndex,
-			segmentId: bestFeature.properties.fid
+		    segmentId: bestFeature.properties.fid
 		  };
 		}
 
