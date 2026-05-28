@@ -2177,10 +2177,33 @@ function sleep(ms){
 				const riverKey =
 				  current.lat.toFixed(5) + "," + current.lng.toFixed(5);
 				
+				
 				if (riverVisited.has(riverKey)) {
-				  console.log("LOOP DETECTED – STOPPER");
-				  break;
+				  console.log("LOOP DETECTED – HOPPER VIDERE");
+				
+				  const snap = snapToNextRiver(
+				    { lat: current.lat, lng: current.lng },
+				    segmentId,
+				    lastPoint,
+				    150
+				  );
+				
+				  if (snap) {
+				    riverLine = snap.line;
+				    riverIndex = snap.index;
+				    segmentId = snap.segmentId;
+				
+				    current = {
+				      lat: snap.point[0],
+				      lng: snap.point[1]
+				    };
+				
+				    continue;
+				  }
+				
+				  // hvis ingenting funker → la den gå videre én node
 				}
+
 				
 				riverVisited.add(riverKey);
 
