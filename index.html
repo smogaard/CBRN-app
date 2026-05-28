@@ -1396,7 +1396,8 @@ function sleep(ms){
 		    if (!data) continue;
 		
 		    for (let f of data.features) {
-		      const geom = f.geometry;
+		      console.log("FEATURE PROPERTIES:", f.properties)
+			  const geom = f.geometry;
 		      if (!geom) continue;
 		
 		      const lines =
