@@ -2187,7 +2187,7 @@ function sleep(ms){
               if (stream) {
                 const distHere = distMeters(current, stream);
 
-                if (!onRiver && distHere < SNAP_DIST) {
+                  if (!onRiver && distHere < SNAP_DIST && stepsSinceRiver > 10) {
 				  console.log("SNAPPET!");
 				
 				  let bestLine = null;
