@@ -1414,21 +1414,27 @@ function sleep(ms){
 		          : [];
 		
 		      // ✅ sjekk om segment ligger nær current (NODE-KOBLING MED TOLERANSE)
-		      let sharesNode = false;
-		
-		      for (let lineCheck of lines) {
-		        for (let ptRaw of lineCheck) {
-		          const pt = [ptRaw[1], ptRaw[0]];
-		
-		          if (distMeters(current, pt) < 8) {
-		            sharesNode = true;
-		            break;
-		          }
-		        }
-		        if (sharesNode) break;
-		      }
-		
-		      if (!sharesNode) continue;
+		      let closeEnough = false;
+
+				for (let lineCheck of lines) {
+				  for (let i = 0; i < lineCheck.length - 1; i++) {
+				
+					const p1 = [lineCheck[i][1], lineCheck[i][0]];
+					const p2 = [lineCheck[i+1][1], lineCheck[i+1][0]];
+				
+					const d = distanceToSegment(current, p1, p2);
+				
+					if (d < 12) {   // ✅ toleranse
+					  closeEnough = true;
+					  break;
+					}
+				
+				  }
+				  if (closeEnough) break;
+				}
+				
+				if (!closeEnough) continue;
+
 		
 		      // ✅ vurder kandidater i linja
 		      for (let line of lines) {
