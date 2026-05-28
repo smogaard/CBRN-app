@@ -2313,7 +2313,7 @@ function sleep(ms){
 				      120
 				    );
 				
-				    if (snap) {
+				    if (snap && snap.point) {
 				      riverLine = snap.line;
 				      riverIndex = snap.index;
 				      segmentId = snap.segmentId;
@@ -2374,7 +2374,7 @@ function sleep(ms){
 						);
 						
 						// ✅ 1: vanlig hopp
-						if (snap) {
+						if (snap && snap.point) {
 						  loopCount = 0;
 						  console.log("HOPPER TIL NY ELV");
 
