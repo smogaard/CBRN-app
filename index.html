@@ -1551,8 +1551,14 @@ function sleep(ms){
 		  }
 		
 		  if (!best) return null;
-		
-		  return {
+
+			
+			if (bestFeature.properties.fid === currentSegmentId) {
+			  console.log("IGNORERER samme segment:", bestFeature.properties.fid);
+			  return null;
+			}
+
+		return {
 		    point: best,
 		    line: bestLine,
 		    index: bestIndex,
@@ -2331,6 +2337,12 @@ function sleep(ms){
 				    );
 				
 				    if (snap && snap.point) {
+											
+					    if (snap.segmentId === segmentId) {
+						  console.log("DROP (retry) – samme segment");
+						  continue;
+					    }
+
 						
 						if (processedRiverSegments.has(snap.segmentId)) {
 						    console.log("SKIPPER (retry) brukt segment:", snap.segmentId);
@@ -2407,6 +2419,12 @@ function sleep(ms){
 						// ✅ 1: vanlig hopp
 						if (snap && snap.point) {
 							
+							  if (snap.segmentId === segmentId) {
+								  console.log("DROP – samme segment etter snap");
+								  continue;
+							  }
+
+							
 							 if (processedRiverSegments.has(snap.segmentId)) {
 							    console.log("SKIPPER allerede brukt segment:", snap.segmentId);
 							    continue;
@@ -2447,6 +2465,12 @@ function sleep(ms){
 						);
 						
 						if (snapFar && snapFar.point) {
+							
+						    if (snapFar.segmentId === segmentId) {
+							  console.log("DROP (extended) – samme segment");
+							  continue;
+						    }
+
 							
 							if (processedRiverSegments.has(snapFar.segmentId)) {
 							  console.log("SKIPPER (extended) segment:", snapFar.segmentId);
