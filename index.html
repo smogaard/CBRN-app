@@ -1478,15 +1478,19 @@ function sleep(ms){
 		            }
 		          }
 		
-		          // ❌ ikke gå tilbake til forrige punkt
-		          if (lastPoint) {
-		            const dPrev = distMeters(
-		              { lat: lastPoint[0], lng: lastPoint[1] },
-		              pt
-		            );
-		
-		            if (dPrev < 5) continue;
-		          }
+		          // ❌ ikke prioriter å gå tilbake til forrige punkt
+		          	if (lastPoint) {
+					  const dPrev = distMeters(
+					    { lat: lastPoint[0], lng: lastPoint[1] },
+					    pt
+					  );
+					
+					  if (dPrev < 5) {
+					    // ✅ tillat, men gi kraftig minus-score
+					    directionScore -= (5 - dPrev) * 0.1;
+					  }
+					}
+
 		
 		          // ✅ score
 		          const score = -d + directionScore * 50;
