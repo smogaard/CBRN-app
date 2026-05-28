@@ -180,6 +180,7 @@ function sleep(ms){
       let t0data;
       let loadedTiles = {};
       let gridLayer;
+	  let processedRiverSegments = new Set();
 
       const SNAP_DIST = 50; // distanse i meter
 
@@ -2042,6 +2043,7 @@ function sleep(ms){
 			let hopAttempts = 0;
 			let loopCount = 0;
 			let recentPositions = []
+			let processedRiverSegments = new Set();
 
             const path = [];
 
@@ -2157,6 +2159,13 @@ function sleep(ms){
 					riverLine = bestLine;
 					riverIndex = bestIndex;
 					segmentId = bestFeature.properties.fid;
+					
+					const earlyKey = segmentId + "_" + bestIndex;
+					
+					if (processedRiverSegments.has(earlyKey)) {
+					  console.log("SNAP → allerede kjent elv, hopper over");
+					  continue;
+					}
 
 				  
 				
@@ -2170,12 +2179,25 @@ function sleep(ms){
 				
 				  onRiver = true;
 				  loopCount = 0;
+				  hopAttempts = 0;
 				  continue;
 				}
               }
 
               // ✅ Følg elv punkt-for-punkt
-             if (onRiver) {  
+             if (onRiver) { 
+				
+				const segmentKey = segmentId + "_" + riverIndex;
+				
+				// ✅ hvis vi allerede har vært her → stopp
+				if (processedRiverSegments.has(segmentKey)) {
+				  console.log("ALLEREDE PROSESSERT ELV – STOPPER");
+				  break;
+				}
+				
+				// ✅ marker som besøkt
+				processedRiverSegments.add(segmentKey);
+
 				const key =
 				  current.lat.toFixed(5) + "," + current.lng.toFixed(5);
 				
@@ -2234,6 +2256,7 @@ function sleep(ms){
 				    onRiver = false;
 				    loopCount = 0;
 				    recentPositions = [];
+					hopAttempts = 0;
 				    continue;
 				  }
 				
@@ -2247,9 +2270,13 @@ function sleep(ms){
 				
 				  if (nextIndex >= riverLine.length) {
 					  
+					  
+					if (hits >= 2) {
 					  hopAttempts++;
+					}
 
-						if (hopAttempts > 30) {
+
+						if (hopAttempts > 200) {
 						  console.log("FOR MANGE HOPP – GIR SEG");
 						  break;
 						}
