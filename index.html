@@ -2018,7 +2018,7 @@ function sleep(ms){
 
 
 		
-        async function createFlowLayer(pos) {
+    	async function createFlowLayer(pos) {
           const startPoints = generateStartPoints(pos, 30, 12);
           const layers = [];
 
@@ -2230,132 +2230,70 @@ function sleep(ms){
 					  
 						const snap = snapToNextRiver(
 						  { lat: current.lat, lng: current.lng },
-						  segmentId, 
+						  segmentId,
 						  lastPoint
 						);
-
-					
-							if (!snap) {
 						
-						  console.log("PRØVER UTVIDET ELV-SNAP");
+						// ✅ 1: vanlig hopp
+						if (snap) {
 						
-						  const snapFar = snapToNextRiver(
-						    { lat: current.lat, lng: current.lng },
-						    segmentId,
-						    lastPoint,
-						    120
-						  );
+						  console.log("HOPPER TIL NY ELV");
 						
-						  if (snapFar) {
+						  riverLine = snap.line;
+						  riverIndex = snap.index;
+						  segmentId = snap.segmentId;
 						
-						    riverLine = snapFar.line;
-						    riverIndex = snapFar.index;
-						    segmentId = snapFar.segmentId;
+						  current = {
+						    lat: snap.point[0],
+						    lng: snap.point[1]
+						  };
 						
-						    current = {
-						      lat: snapFar.point[0],
-						      lng: snapFar.point[1]
-						    };
-						
-						    continue;
-						  }
-						
-						
-						  // ✅ NY: GLOBAL FALLBACK (ALDRI STOPP)
-						  console.log("FALLBACK → nærmeste elv");
-						
-						  const nearest = findNearestStream(current);
-						
-						  if (nearest) {
-						
-						    current = {
-						      lat: nearest[0],
-						      lng: nearest[1]
-						    };
-						
-						    // finn segment igjen derfra
-						    let bestLine = null;
-						    let bestIndex = -1;
-						    let bestFeature = null;
-						    let bestDist = Infinity;
-						
-						    for (let key in loadedTiles) {
-						      if (!key.startsWith("elvis")) continue;
-						
-						      const data = loadedTiles[key];
-						      if (!data) continue;
-						
-						      for (let f of data.features) {
-						
-						        const geom = f.geometry;
-						        if (!geom) continue;
-						
-						        const lines =
-						          geom.type === "LineString"
-						            ? [geom.coordinates]
-						            : geom.type === "MultiLineString"
-						            ? geom.coordinates
-						            : [];
-						
-						        for (let line of lines) {
-						          for (let i = 0; i < line.length; i++) {
-						
-						            const pt = [line[i][1], line[i][0]];
-						            const d = distMeters(current, pt);
-						
-						            if (d < bestDist) {
-						              bestDist = d;
-						              bestLine = line;
-						              bestIndex = i;
-						              bestFeature = f;
-						            }
-						          }
-						        }
-						      }
-						    }
-						
-						    if (bestLine) {
-						      riverLine = bestLine;
-						      riverIndex = bestIndex;
-						      segmentId = bestFeature.properties.fid;
-						
-						      continue;
-						    }
-						  }
-						
-						  // ❌ IKKE break!
+						  poly.addLatLng([current.lat, current.lng]);
+						  continue;
 						}
-
-					
-					  riverLine = snapFar.line;
-					  riverIndex = snapFar.index;
-					  segmentId = snapFar.segmentId
-					
-					  current = {
-					    lat: snapFar.point[0],
-					    lng: snapFar.point[1]
-					  };
-					
-					  poly.addLatLng([current.lat, current.lng]);
-					
-					  continue;
-					}
-					
-					  console.log("HOPPER TIL NY ELV");
-					
-					  riverLine = snap.line;
-					  riverIndex = snap.index;
-					  segmentId = snap.segmentId
-					
-					  current = {
-					    lat: snap.point[0],
-					    lng: snap.point[1]
-					  };
-					
-					  poly.addLatLng([current.lat, current.lng]);
-					
-					  continue;
-					}
+						
+						// ✅ 2: større radius
+						const snapFar = snapToNextRiver(
+						  { lat: current.lat, lng: current.lng },
+						  segmentId,
+						  lastPoint,
+						  120
+						);
+						
+						if (snapFar) {
+						
+						  console.log("UTVIDET HOPP");
+						
+						  riverLine = snapFar.line;
+						  riverIndex = snapFar.index;
+						  segmentId = snapFar.segmentId;
+						
+						  current = {
+						    lat: snapFar.point[0],
+						    lng: snapFar.point[1]
+						  };
+						
+						  poly.addLatLng([current.lat, current.lng]);
+						  continue;
+						}
+						
+						// ✅ 3: fallback
+						console.log("FALLBACK → nærmeste elv");
+						
+						const nearest = findNearestStream(current);
+						
+						if (nearest) {
+						  current = {
+						    lat: nearest[0],
+						    lng: nearest[1]
+						  };
+						
+						  continue;
+						}
+						
+						// ✅ siste stopp
+						break;
+				  }
 				
 				  const next = riverLine[nextIndex];
 				 	
@@ -2510,6 +2448,7 @@ function sleep(ms){
         
         return L.layerGroup(layers);
       }
+
 
 
 
