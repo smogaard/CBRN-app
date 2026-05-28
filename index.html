@@ -2250,6 +2250,9 @@ function sleep(ms){
               // ✅ Følg elv punkt-for-punkt
              if (onRiver) { 
 				
+				const allowBacktracking =
+				    loopCount > 0 || cameFromFallback || cameFromSnap;
+
 				const segmentKey = segmentId;
 
 				// ✅ kun segment-nivå
@@ -2316,10 +2319,7 @@ function sleep(ms){
 				  // ✅ maks ett nytt forsøk
 				  if (loopCount <= 1) {
 
-					const allowBacktracking =
-					    loopCount > 0 || cameFromFallback || cameFromSnap;
-				
-				    const snap = await snapToNextRiver(
+					const snap = await snapToNextRiver(
 				      { lat: current.lat, lng: current.lng },
 				      segmentId,
 				      lastPoint,
@@ -2386,9 +2386,6 @@ function sleep(ms){
 						  break;
 						}
 						
-						const allowBacktracking =
-						  loopCount > 0 || cameFromFallback || cameFromSnap;
-						
 						const snap = await snapToNextRiver(
 						  { lat: current.lat, lng: current.lng },
 						  segmentId,
@@ -2426,10 +2423,6 @@ function sleep(ms){
 						
 						// ✅ 2: større radius
 	
-						const allowBacktracking =
-						  loopCount > 0 || cameFromFallback || cameFromSnap;
-
-					  
 						const snapFar = await snapToNextRiver(
 						  { lat: current.lat, lng: current.lng },
 						  segmentId,
