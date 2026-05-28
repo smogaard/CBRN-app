@@ -2197,10 +2197,19 @@ function sleep(ms){
 				const segmentKey = segmentId + "_" + riverIndex;
 				
 				// ✅ hvis vi allerede har vært her → stopp
+				
 				if (processedRiverSegments.has(segmentKey)) {
-				  console.log("ALLEREDE PROSESSERT ELV – STOPPER");
-				  break;
+				
+				  if (cameFromFallback) {
+				    console.log("TILLATER REENTRY ETTER FALLBACK ✅");
+				    cameFromFallback = false; // reset
+				  } else {
+				    console.log("ALLEREDE PROSESSERT ELV – STOPPER");
+				    break;
+				  }
+				
 				}
+
 				
 				// ✅ marker som besøkt
 				processedRiverSegments.add(segmentKey);
