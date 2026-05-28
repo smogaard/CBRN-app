@@ -1996,7 +1996,7 @@ function sleep(ms){
             let lastPoint = null;
 			let lastDist = Infinity;
 			let stuckCounter = 0;
-
+			let hopAttempts = 0;
 
             const path = [];
 
@@ -2150,14 +2150,30 @@ function sleep(ms){
               }
 
               // ✅ Følg elv punkt-for-punkt
-             if (onRiver) {
+             if (onRiver) {  
+				const riverKey =
+				  current.lat.toFixed(5) + "," + current.lng.toFixed(5);
+				
+				if (riverVisited.has(riverKey)) {
+				  console.log("LOOP DETECTED – STOPPER");
+				  break;
+				}
+				
+				riverVisited.add(riverKey);
 
-				  if (!riverLine || riverIndex === -1) break;
+				 if (!riverLine || riverIndex === -1) break;
 				
 				  let nextIndex = riverIndex + 1;
 				
 				  if (nextIndex >= riverLine.length) {
+					  
+					  hopAttempts++;
 
+						if (hopAttempts > 10) {
+						  console.log("FOR MANGE HOPP – STOPPER");
+						  break;
+						}
+					  
 					  const snap = snapToNextRiver(
 					    { lat: current.lat, lng: current.lng },
 					    riverLine,
@@ -2209,6 +2225,15 @@ function sleep(ms){
 					}
 				
 				  const next = riverLine[nextIndex];
+				 	
+					if (
+					  Math.abs(next[1] - current.lat) < 0.000001 &&
+					  Math.abs(next[0] - current.lng) < 0.000001
+					) {
+					  console.log("STÅR STILLE I ELV – STOPPER");
+					  break;
+					}
+
 				  lastPoint = [current.lat, current.lng];
 				 
 				  current = {
