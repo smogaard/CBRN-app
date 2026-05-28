@@ -1441,6 +1441,16 @@ function sleep(ms){
 		        for (let i = 0; i < line.length; i++) {
 		
 		          const pt = [line[i][1], line[i][0]];
+
+				  
+				  const transitionKey =
+					  currentSegmentId + "_" + (lastPoint ? "1" : "0") + "→" +
+					  f.properties.fid + "_" + i;
+					
+				  if (failedTransitions.has(transitionKey)) {
+					  continue;
+				  }
+
 		
 		          const d = distMeters(current, pt);
 		
@@ -2056,6 +2066,8 @@ function sleep(ms){
 			let processedRiverSegments = new Set();
 			let cameFromFallback = false;
 			let cameFromSnap = false;
+			
+			const failedTransitions = new Set();
 
             const path = [];
 
@@ -2324,6 +2336,12 @@ function sleep(ms){
 						if (snap) {
 						  loopCount = 0;
 						  console.log("HOPPER TIL NY ELV");
+
+						  
+						// ✅ lagre hvor vi kom fra
+						  lastSegmentId = segmentId;
+						  lastRiverIndex = riverIndex;
+
 						
 						  riverLine = snap.line;
 						  riverIndex = snap.index;
@@ -2352,6 +2370,9 @@ function sleep(ms){
 						  loopCount = 0;
 						  console.log("UTVIDET HOPP");
 						
+						  lastSegmentId = segmentId;
+						  lastRiverIndex = riverIndex;
+
 						  riverLine = snapFar.line;
 						  riverIndex = snapFar.index;
 						  segmentId = snapFar.segmentId;
