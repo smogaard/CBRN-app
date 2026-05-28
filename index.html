@@ -1553,6 +1553,15 @@ function sleep(ms){
 			  for (let line of lines) {
 				for (let i = 0; i < line.length; i++) {
 				  const pt = [line[i][1], line[i][0]];
+					
+					// ✅ BLACKLIST check
+					const transitionKey =
+					  currentSegmentId + "→" + f.properties.fid;
+					
+					if (failedTransitions.has(transitionKey)) {
+					  continue;
+					}
+
 		
 				  const d = distMeters(
 					{ lat: currentPoint[0], lng: currentPoint[1] },
