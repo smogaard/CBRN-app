@@ -2052,7 +2052,8 @@ function sleep(ms){
           const startPoints = generateStartPoints(pos, 30, 12);
           const layers = [];
 
-          
+          const failedTransitions = new Set();
+			
 		  for (const start of startPoints) {
 			
 		  await new Promise(requestAnimationFrame);
@@ -2076,7 +2077,7 @@ function sleep(ms){
 			let cameFromFallback = false;
 			let cameFromSnap = false;
 			
-			const failedTransitions = new Set();
+			
 
             const path = [];
 
