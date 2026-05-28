@@ -2050,6 +2050,7 @@ function sleep(ms){
 			let loopCount = 0;
 			let recentPositions = []
 			let processedRiverSegments = new Set();
+			let cameFromFallback = false;
 
             const path = [];
 
@@ -2347,7 +2348,8 @@ function sleep(ms){
 						    lat: nearest[0],
 						    lng: nearest[1]
 						  };
-						
+
+						  cameFromFallback = true;						
 						  continue;
 						}
 						
