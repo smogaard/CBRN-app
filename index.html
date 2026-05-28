@@ -741,6 +741,9 @@ function sleep(ms){
           promises.push(loadTile("elvis", p[0], p[1]));
           promises.push(loadTile("innsjo", p[0], p[1]));
         }
+		
+		processedRiverSegments.clear();
+		failedTransitions.clear();
 
         Promise.all(promises).then(() => {
           console.log("✅ Tiles ferdig lastet");
@@ -2111,7 +2114,6 @@ function sleep(ms){
 			let hopAttempts = 0;
 			let loopCount = 0;
 			let recentPositions = []
-			let processedRiverSegments = new Set();
 			let cameFromFallback = false;
 			let cameFromSnap = false;
 			let stepsSinceSnap = 1000;
