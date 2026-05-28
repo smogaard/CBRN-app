@@ -1399,8 +1399,25 @@ function sleep(ms){
 		    for (let f of data.features) {
 
 				// ✅ FINN NODE VI STÅR PÅ
-				const nodeKey =
-				  current.lat.toFixed(6) + "," + current.lng.toFixed(6);
+				
+				let sharesNode = false;
+				
+				for (let lineCheck of linesCheck) {
+				  for (let ptRaw of lineCheck) {
+				
+				    const pt = [ptRaw[1], ptRaw[0]];
+				
+				    // ✅ TOLERANSE i meter (VELDIG viktig)
+				    if (distMeters(current, pt) < 5) {
+				      sharesNode = true;
+				      break;
+				    }
+				  }
+				  if (sharesNode) break;
+				}
+				
+				if (!sharesNode) continue;
+
 				
 				// ✅ SJEKK OM SEGMENT DELER DENNE NODEN
 				const geomCheck = f.geometry;
