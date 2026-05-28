@@ -1386,7 +1386,7 @@ function sleep(ms){
       }
 
 
-		function snapToNextRiver(current, currentSegmentId, lastPoint, maxDist = 40) {
+		async function snapToNextRiver(current, currentSegmentId, lastPoint, maxDist = 40) {
 		
 		  let best = null;
 		  let bestScore = -Infinity;
@@ -1455,6 +1455,12 @@ function sleep(ms){
 
 		
 		          const d = distMeters(current, pt);
+					
+				  const elevHere = await getElevationCached(current.lat, current.lng);
+				  const elevNext = await getElevationCached(pt[0], pt[1]);
+					
+				  const elevDiff = elevNext - elevHere;
+
 		
 		          // ❌ ikke samme punkt
 		          if (d < 3) continue;
@@ -1505,7 +1511,19 @@ function sleep(ms){
 
 		
 		          // ✅ score
-		          const score = -d + directionScore * 50;
+		          
+					let score = -d + directionScore * 50;
+					
+					// ✅ NYTT: straff oppover
+					if (elevDiff > 0) {
+					  score -= elevDiff * 200;   // 🔥 viktig tuning
+					}
+					
+					// ✅ bonus nedover
+					if (elevDiff < 0) {
+					  score += Math.abs(elevDiff) * 20;
+					}
+
 		
 		          if (score > bestScore) {
 		            bestScore = score;
@@ -2288,7 +2306,7 @@ function sleep(ms){
 				  // ✅ maks ett nytt forsøk
 				  if (loopCount <= 1) {
 				
-				    const snap = snapToNextRiver(
+				    const snap = await snapToNextRiver(
 				      { lat: current.lat, lng: current.lng },
 				      segmentId,
 				      lastPoint,
@@ -2349,7 +2367,7 @@ function sleep(ms){
 						}
 					  
 					  
-						const snap = snapToNextRiver(
+						const snap = await snapToNextRiver(
 						  { lat: current.lat, lng: current.lng },
 						  segmentId,
 						  lastPoint
