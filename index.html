@@ -2102,37 +2102,7 @@ function sleep(ms){
 				  lastDist = d;
 				}
 
-				// ✅ DESPERAT SNAP hvis vi sitter fast
-				if (!onRiver && stuckCounter > 15) {
-				
-				  console.log("DESPERAT SNAP AKTIVERT");
-				
-				  const snap = snapToNextRiver(
-				    { lat: current.lat, lng: current.lng },
-				    null,   // ikke ekskluder linje
-				    lastPoint
-				  );
-				
-				  if (snap) {
-				    current = {
-				      lat: snap.point[0],
-				      lng: snap.point[1]
-				    };
-				
-				    riverLine = snap.line;
-				    riverIndex = snap.index;
-					segmentId = snap.segmentId;
-				
-				    onRiver = true;
-				
-				    poly.addLatLng([current.lat, current.lng]);
-				    path.push([current.lat, current.lng, "river"]);
-				
-				    continue;
-				  }
-				}
-
-				
+								
               if (stream) {
                 const distHere = distMeters(current, stream);
 
