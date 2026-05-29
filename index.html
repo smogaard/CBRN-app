@@ -2696,6 +2696,7 @@ function sleep(ms){
 			  current = fallback;
 			  continue;
 			}
+		}
 
             const h1 = await getElevationCached(current.lat, current.lng);
             const h2 = await getElevationCached(next.lat, next.lng);
