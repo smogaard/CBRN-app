@@ -2635,33 +2635,7 @@ function sleep(ms){
 						
 						// ✅ siste stopp
 						break;
-				  }
-				
-				 	if (!next) {
-					  console.log("FEIL: next undefined");
-					  break;
-					}
-
-				 	if (
-					  Math.abs(next[1] - current.lat) < 0.000001 &&
-					  Math.abs(next[0] - current.lng) < 0.000001
-					) {
-					  console.log("STÅR STILLE I ELV – STOPPER");
-					  break;
-					}	
-
-				  lastPoint = [current.lat, current.lng];
-				 
-				  current = {
-				    lat: next[1],
-				    lng: next[0],
-				  };
-				
-				  riverIndex = nextIndex;
-				
-				  poly.addLatLng([current.lat, current.lng]);
-				  path.push([current.lat, current.lng, "river"]);
-				
+				  }	
 				  
 					if (isInWater(current.lat, current.lng)) {
 					  console.log("TREFFER INNSJØ/KYST – STOPPER");
