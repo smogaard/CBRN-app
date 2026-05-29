@@ -2299,9 +2299,6 @@ function sleep(ms){
 				
 				}
 				
-				// ✅ marker kun segment (ikke index)
-				processedRiverSegments.add(segmentKey);
-				 
 				const key =
 				  current.lat.toFixed(5) + "," + current.lng.toFixed(5);
 				
@@ -2359,6 +2356,8 @@ function sleep(ms){
 						    console.log("SKIPPER (retry) brukt segment:", snap.segmentId);
 						    continue;
 						  }
+						
+					  processedRiverSegments.add(segmentKey);
 
 				      riverLine = snap.line;
 				      riverIndex = snap.index;
@@ -2458,6 +2457,8 @@ function sleep(ms){
 							    console.log("SKIPPER allerede brukt segment:", snap.segmentId);
 							    continue;
 							  }
+							
+						  processedRiverSegments.add(snap.segmentId);							
 
 						  loopCount = 0;
 						  console.log("HOPPER TIL NY ELV");
@@ -2507,6 +2508,8 @@ function sleep(ms){
 							  console.log("SKIPPER (extended) segment:", snapFar.segmentId);
 							  continue;
 							}
+
+						  processedRiverSegments.add(snap.segmentId);
 
 						  loopCount = 0;
 						  console.log("UTVIDET HOPP");
