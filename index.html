@@ -1571,7 +1571,7 @@ function sleep(ms){
 		}
 
 		
-		function findNextRiverSegment(currentPoint, prevPoint, segmentId) {
+		async function findNextRiverSegment(currentPoint, prevPoint, segmentId) {
 		  let bestLine = null;
 		  let bestIndex = -1;
 		  let bestScore = -Infinity;
@@ -2440,7 +2440,7 @@ function sleep(ms){
 
 				  console.log("END OF LINE → søker neste segment");
 				
-				  const nextSegment = findNextRiverSegment(
+				  const nextSegment = await findNextRiverSegment(
 				    [current.lat, current.lng],
 				    lastPoint, 
 					segmentId
