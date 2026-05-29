@@ -2271,10 +2271,8 @@ function sleep(ms){
 				const allowBacktracking =
 				    loopCount > 0 || cameFromFallback || cameFromSnap;
 
-				const segmentKey = segmentId;
-
 				// ✅ kun segment-nivå
-				if (processedRiverSegments.has(segmentKey)) {
+				if (processedRiverSegments.has(segmentId)) {
 				
 				  // ✅ hvis vi faktisk beveger oss videre i segmentet → tillat
 				  if (lastPoint) {
@@ -2357,7 +2355,7 @@ function sleep(ms){
 						    continue;
 						  }
 						
-					  processedRiverSegments.add(segmentKey);
+					  processedRiverSegments.add(segmentId);
 
 				      riverLine = snap.line;
 				      riverIndex = snap.index;
