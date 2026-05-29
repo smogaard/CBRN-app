@@ -855,7 +855,10 @@ function sleep(ms){
 		    flowLayer = layer;
 		
 		    if (flowLayer) {
-		      flowLayer.addTo(map);
+		      
+			flowLayer.addTo(map);
+			flowLayer.bringToFront();
+
 		    }
 		  });
 		
@@ -2144,7 +2147,9 @@ function sleep(ms){
 			  weight: 3,
 			  opacity: 0.8
 			}).addTo(map);
-			
+
+			poly.bringToFront();
+			  
 			layers.push(poly);
 
             const visited = new Set();
@@ -2660,77 +2665,7 @@ function sleep(ms){
 
 			// await connectFlowsToWater(poly);
 
-            // ↙️ RESTEN AV DIN KODE SKAL KOMME ETTER DETTE
-
-            const nextDEM = await getSteepestDirectionDEM(
-              current.lat,
-              current.lng,
-              10
-            );
-
-           
-			if (!nextDEM){
-			  const fallback = await getSteepestDirectionDEM(
-			    current.lat,
-			    current.lng,
-			    80
-			  );
-
-			  if (!fallback) break;
-
-			  current = fallback;
-			  continue;
-			}
-		}
-
-            const h1 = await getElevationCached(current.lat, current.lng);
-            const h2 = await getElevationCached(nextDEM.lat, nextDEM.lng);
-
-            // ✅ stopp hvis nesten flatt
-            if (Math.abs(h1 - h2) < 0.15) {
-              //break;
-            }
-
-            // ✅ fallback hvis oppover
-            if (h2 >= h1) {
-              let best = null;
-              let lowest = h1;
-
-              const dirs = [0, 45, 90, 135, 180, 225, 270, 315];
-
-              for (let d of dirs) {
-                const p = destination(
-                  current.lat,
-                  current.lng,
-                  (d * Math.PI) / 180,
-                  40
-                );
-
-                const h = await getElevationCached(p.lat, p.lng);
-
-                if (h < lowest) {
-                  lowest = h;
-                  best = p;
-                }
-              }
-
-              if (best) {
-                current = best;
-              } else {
-                const next2 = await getSteepestDirectionDEM(
-                  current.lat,
-                  current.lng,
-                  80
-                );
-
-                if (!next2) break;
-
-                current = next2;
-			    }              
-			
-            } else {
-              current = nextDEM;
-            }
+                       
 
             // 🔴 FORCE SNAP kun hvis vi IKKE allerede traff elv
            
