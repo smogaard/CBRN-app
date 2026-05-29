@@ -2676,14 +2676,14 @@ function sleep(ms){
 
             // ↙️ RESTEN AV DIN KODE SKAL KOMME ETTER DETTE
 
-            const next = await getSteepestDirectionDEM(
+            const nextDEM = await getSteepestDirectionDEM(
               current.lat,
               current.lng,
               10
             );
 
            
-			if (!next){
+			if (!nextDEM){
 			  const fallback = await getSteepestDirectionDEM(
 			    current.lat,
 			    current.lng,
@@ -2698,7 +2698,7 @@ function sleep(ms){
 		}
 
             const h1 = await getElevationCached(current.lat, current.lng);
-            const h2 = await getElevationCached(next.lat, next.lng);
+            const h2 = await getElevationCached(nextDEM.lat, nextDEM.lng);
 
             // ✅ stopp hvis nesten flatt
             if (Math.abs(h1 - h2) < 0.15) {
@@ -2740,10 +2740,10 @@ function sleep(ms){
                 if (!next2) break;
 
                 current = next2;
-              sS
+              
 			
             } else {
-              current = next;
+              current = nextDEM;
             }
 
             // 🔴 FORCE SNAP kun hvis vi IKKE allerede traff elv
