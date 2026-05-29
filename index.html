@@ -1636,8 +1636,8 @@ function sleep(ms){
 					
 					    if (dot < -0.3) continue;
 					
-					   	const elev = getElevationCached(pt[0], pt[1]);
-						const here = getElevationCached(currentPoint[0], currentPoint[1]);
+					   	const elev = await getElevationCached(pt[0], pt[1]);
+						const here = await getElevationCached(currentPoint[0], currentPoint[1]);
 						
 						let score = 0;
 						
