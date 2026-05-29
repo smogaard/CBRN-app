@@ -2433,24 +2433,28 @@ function sleep(ms){
 				
 				  let nextIndex = riverIndex + 1;
 				
-				  if (nextIndex >= riverLine.length) {
-					  
-					if (stepsSinceSnap < 5) {
-					  // prøv heller DEM i stedet for ny snap
-					  const forward = await getSteepestDirectionDEM(
-					    current.lat,
-					    current.lng,
-					    40
-					  );
-					
-					  if (forward) {
-					    current = forward;
-					    onRiver = false;
-					    continue;
-					  }
-					
-					  continue;
-					}
+				 if (nextIndex >= riverLine.length) {
+
+				  console.log("END OF LINE → søker neste segment");
+				
+				  const nextSegment = findNextRiverSegment(
+				    [current.lat, current.lng],
+				    lastPoint
+				  );
+				
+				  if (nextSegment) {
+				    riverLine = nextSegment.line;
+				    riverIndex = nextSegment.index;
+				
+				    console.log("FORTSETTER I NY LINJE");
+				
+				    continue;
+				  }
+				
+				  console.log("INGEN VIDERE ELV → stopper");
+				
+				  break;
+				}
 				  
 					  
 					if (hits >= 2) {
