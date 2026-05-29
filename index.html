@@ -2439,7 +2439,7 @@ function sleep(ms){
 				 
 				 if (!riverLine  || riverIndex === -1) break;
 				 
-				if (!riverLine  || .length === 0) {
+				if (!riverLine  || riverLine.length === 0) {
 				  console.log("FEIL:  undefined");
 				  break;
 				}
@@ -2447,7 +2447,7 @@ function sleep(ms){
 				
 				  let nextIndex = riverIndex + 1;
 				
-				 if (nextIndex >= .length) {
+				 if (nextIndex >= riverLine.length) {
 
 				  console.log("END OF LINE → søker neste segment");
 				
@@ -2458,7 +2458,7 @@ function sleep(ms){
 				  );
 				
 				  if (nextSegment) {
-				     = nextSegment.line;
+				    riverLine = nextSegment.line;
 				    riverIndex = nextSegment.index;
 				
 				    console.log("FORTSETTER I NY LINJE");
