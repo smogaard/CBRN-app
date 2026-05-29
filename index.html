@@ -844,21 +844,10 @@ function sleep(ms){
           plumeNow.bringToBack();
         }
 
-        
-		if (marker) {
-		
-		  createFlowLayer(pos).then(layer => {
-		    if (flowLayer) {
-		      map.removeLayer(flowLayer);
-		    }
-		
-		    flowLayer = layer;
-		
-		    if (flowLayer) {
-		      flowLayer.addTo(map);
-		    }
-		  });
-		
+        if (marker) {
+
+  			(pos);   // ✅ bare kall funksjonen
+
 		}
 
         // sørg for at hotzone ligger øverst
@@ -2117,7 +2106,7 @@ function sleep(ms){
               lng: start.lng,
             };
             let onRiver = false;
-			let  = null;
+			let riverLine = null;
 			let riverIndex = -1;
 			let segmentId = null;
             let lastPoint = null;
@@ -2278,8 +2267,8 @@ function sleep(ms){
 				  
 				
 				  current = {
-				    lat: [riverIndex][1],
-				    lng: [riverIndex][0],
+				    lat: riverLine[riverIndex][1],
+				    lng: riverLine[riverIndex][0],
 				  };
 				
 				  poly.addLatLng([current.lat, current.lng]);
@@ -2437,10 +2426,10 @@ function sleep(ms){
 				}
 
 				 
-				 if (!riverLine  || riverIndex === -1) break;
+				 if (!riverLine || riverIndex === -1) break;
 				 
-				if (!riverLine  || riverLine.length === 0) {
-				  console.log("FEIL:  undefined");
+				if (!riverLine || riverLine.length === 0) {
+				  console.log("FEIL: riverLine undefined");
 				  break;
 				}
 
@@ -2600,7 +2589,7 @@ function sleep(ms){
 						  lastSegmentId = segmentId;
 						  lastRiverIndex = riverIndex;
 
-						  riverLine  = snapFar.line;
+						  riverLine = snapFar.line;
 						  riverIndex = snapFar.index;
 						  segmentId = snapFar.segmentId;
 						
@@ -2634,21 +2623,7 @@ function sleep(ms){
 						break;
 				  }
 				
-				  	//let nextIndex = riverIndex + 1;
-					
-					if (!riverLine) {
-					  console.log("riverLine er null – hopper over");
-					  break;
-					}
-					
-					let nextIndex = riverIndex + 1;
-					const next = riverLine[nextIndex];
-					
-					if (!next) {
-					  console.log("next er null");
-					  break;
-					}
-
+				  const next = riverLine[nextIndex];
 
 				 	if (!next) {
 					  console.log("FEIL: next undefined");
