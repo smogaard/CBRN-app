@@ -844,10 +844,21 @@ function sleep(ms){
           plumeNow.bringToBack();
         }
 
-        if (marker) {
-
-  			(pos);   // ✅ bare kall funksjonen
-
+        
+		if (marker) {
+		
+		  createFlowLayer(pos).then(layer => {
+		    if (flowLayer) {
+		      map.removeLayer(flowLayer);
+		    }
+		
+		    flowLayer = layer;
+		
+		    if (flowLayer) {
+		      flowLayer.addTo(map);
+		    }
+		  });
+		
 		}
 
         // sørg for at hotzone ligger øverst
