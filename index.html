@@ -2117,7 +2117,7 @@ function sleep(ms){
               lng: start.lng,
             };
             let onRiver = false;
-			let riverLine = null;
+			let  = null;
 			let riverIndex = -1;
 			let segmentId = null;
             let lastPoint = null;
@@ -2251,7 +2251,7 @@ function sleep(ms){
 				  
 					if (!bestLine) continue;
 					
-					riverLine = bestLine;
+					 = bestLine;
 					riverIndex = bestIndex;
 					segmentId = bestFeature.properties.fid;
 
@@ -2278,8 +2278,8 @@ function sleep(ms){
 				  
 				
 				  current = {
-				    lat: riverLine[riverIndex][1],
-				    lng: riverLine[riverIndex][0],
+				    lat: [riverIndex][1],
+				    lng: [riverIndex][0],
 				  };
 				
 				  poly.addLatLng([current.lat, current.lng]);
@@ -2402,7 +2402,7 @@ function sleep(ms){
 						
 					  processedRiverSegments.add(segmentId);*/
 
-				      riverLine = snap.line;
+				       = snap.line;
 				      riverIndex = snap.index;
 				      segmentId = snap.segmentId;
 				
@@ -2437,17 +2437,17 @@ function sleep(ms){
 				}
 
 				 
-				 if (!riverLine || riverIndex === -1) break;
+				 if (! || riverIndex === -1) break;
 				 
-				if (!riverLine || riverLine.length === 0) {
-				  console.log("FEIL: riverLine undefined");
+				if (! || .length === 0) {
+				  console.log("FEIL:  undefined");
 				  break;
 				}
 
 				
 				  let nextIndex = riverIndex + 1;
 				
-				 if (nextIndex >= riverLine.length) {
+				 if (nextIndex >= .length) {
 
 				  console.log("END OF LINE → søker neste segment");
 				
@@ -2458,7 +2458,7 @@ function sleep(ms){
 				  );
 				
 				  if (nextSegment) {
-				    riverLine = nextSegment.line;
+				     = nextSegment.line;
 				    riverIndex = nextSegment.index;
 				
 				    console.log("FORTSETTER I NY LINJE");
@@ -2536,7 +2536,7 @@ function sleep(ms){
 						  lastRiverIndex = riverIndex;
 
 						
-						  riverLine = snap.line;
+						   = snap.line;
 						  riverIndex = snap.index;
 						  segmentId = snap.segmentId;
 						
@@ -2600,7 +2600,7 @@ function sleep(ms){
 						  lastSegmentId = segmentId;
 						  lastRiverIndex = riverIndex;
 
-						  riverLine = snapFar.line;
+						   = snapFar.line;
 						  riverIndex = snapFar.index;
 						  segmentId = snapFar.segmentId;
 						
@@ -2635,7 +2635,19 @@ function sleep(ms){
 				  }
 				
 				  	let nextIndex = riverIndex + 1;
+					
+					if (!riverLine) {
+					  console.log("riverLine er null – hopper over");
+					  break;
+					}
+					
+					let nextIndex = riverIndex + 1;
 					const next = riverLine[nextIndex];
+					
+					if (!next) {
+					  console.log("next er null");
+					  break;
+					}
 
 
 				 	if (!next) {
