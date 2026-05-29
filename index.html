@@ -1571,7 +1571,7 @@ function sleep(ms){
 		}
 
 		
-		function findNextRiverSegment(currentPoint, prevPoint) {
+		function findNextRiverSegment(currentPoint, prevPoint, segmentId) {
 		  let bestLine = null;
 		  let bestIndex = -1;
 		  let bestScore = -Infinity;
@@ -1599,7 +1599,7 @@ function sleep(ms){
 					
 					// ✅ BLACKLIST check
 					const transitionKey =
-					  currentSegmentId + "→" + f.properties.fid;
+  						segmentId + "→" + f.properties.fid;
 					
 					if (failedTransitions.has(transitionKey)) {
 					  continue;
@@ -2439,7 +2439,8 @@ function sleep(ms){
 				
 				  const nextSegment = findNextRiverSegment(
 				    [current.lat, current.lng],
-				    lastPoint
+				    lastPoint, 
+					sewgmentId
 				  );
 				
 				  if (nextSegment) {
@@ -2454,6 +2455,8 @@ function sleep(ms){
 				  console.log("INGEN VIDERE ELV → stopper");
 				
 				  break;
+					 
+				 }
 				
 		
 				  
