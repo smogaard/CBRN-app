@@ -180,7 +180,8 @@ function sleep(ms){
       let t0data;
       let loadedTiles = {};
       let gridLayer;
-	  let processedRiverSegments = new Set();
+	  //let processedRiverSegments = new Set();
+	  let riverEndings = new Map();
 	  
 	  const failedTransitions = new Set();
 
@@ -742,7 +743,7 @@ function sleep(ms){
           promises.push(loadTile("innsjo", p[0], p[1]));
         }
 		
-		processedRiverSegments.clear();
+		//processedRiverSegments.clear();
 		failedTransitions.clear();
 
         Promise.all(promises).then(() => {
@@ -2239,13 +2240,26 @@ function sleep(ms){
 					riverLine = bestLine;
 					riverIndex = bestIndex;
 					segmentId = bestFeature.properties.fid;
+
+					  
+					/ ✅ SJEKK OM ELVA ALLEREDE ER TRACET
+					if (riverEndings.has(segmentId)) {
+					  console.log("ELV ALLEREDE TRACET → hopper til slutt");
+					
+					  const end = riverEndings.get(segmentId);
+					
+					  current = {
+					    lat: end.lat,
+					    lng: end.lng
+					  };
+					
+					  poly.addLatLng([current.lat, current.lng]);
+					
+					  break; // ✅ stopp denne flowen
+					}
+
 					
 					const earlyKey = segmentId + "_" + bestIndex;
-					
-					if (processedRiverSegments.has(earlyKey)) {
-					  console.log("SNAP → allerede kjent elv, hopper over");
-					  continue;
-					}
 
 				  
 				
@@ -2272,7 +2286,8 @@ function sleep(ms){
 				    loopCount > 0 || cameFromFallback || cameFromSnap;
 
 				// ✅ kun segment-nivå
-				if (processedRiverSegments.has(segmentId)) {
+				
+				/*if (processedRiverSegments.has(segmentId)) {
 				
 				  // ✅ hvis vi faktisk beveger oss videre i segmentet → tillat
 				  if (lastPoint) {
@@ -2295,7 +2310,7 @@ function sleep(ms){
 				
 				  }
 				
-				}
+				}*/
 				
 				const key =
 				  current.lat.toFixed(5) + "," + current.lng.toFixed(5);
@@ -2342,6 +2357,22 @@ function sleep(ms){
 				
 				    if (snap && snap.point) {
 						
+					if (riverEndings.has(snap.segmentId)) {
+					  console.log("HOPPER DIREKTE TIL SLUTT (retry)");
+					
+					  const end = riverEndings.get(snap.segmentId);
+					
+					  current = {
+					    lat: end.lat,
+					    lng: end.lng
+					  };
+					
+					  poly.addLatLng([current.lat, current.lng]);
+					
+					  break;
+					}
+
+						
 						stepsSinceSnap = 0;
 											
 					    if (snap.segmentId === segmentId) {
@@ -2350,12 +2381,12 @@ function sleep(ms){
 					    }
 
 						
-						if (processedRiverSegments.has(snap.segmentId)) {
+						/*if (processedRiverSegments.has(snap.segmentId)) {
 						    console.log("SKIPPER (retry) brukt segment:", snap.segmentId);
 						    continue;
 						  }
 						
-					  processedRiverSegments.add(segmentId);
+					  processedRiverSegments.add(segmentId);*/
 
 				      riverLine = snap.line;
 				      riverIndex = snap.index;
@@ -2443,6 +2474,22 @@ function sleep(ms){
 						
 						// ✅ 1: vanlig hopp
 						if (snap && snap.point) {
+							
+							if (riverEndings.has(snap.segmentId)) {
+							  console.log("HOPPER DIREKTE TIL SLUTT");
+							
+							  const end = riverEndings.get(snap.segmentId);
+							
+							  current = {
+								lat: end.lat,
+								lng: end.lng
+							  };
+							
+							  poly.addLatLng([current.lat, current.lng]);
+							
+							  break;
+							}
+
 							  stepsSinceSnap = 0;
 							
 							  if (snap.segmentId === segmentId) {
@@ -2451,12 +2498,12 @@ function sleep(ms){
 							  }
 
 							
-							 if (processedRiverSegments.has(snap.segmentId)) {
+							 /*if (processedRiverSegments.has(snap.segmentId)) {
 							    console.log("SKIPPER allerede brukt segment:", snap.segmentId);
 							    continue;
 							  }
 							
-						  processedRiverSegments.add(snap.segmentId);							
+						  processedRiverSegments.add(snap.segmentId);	*/						
 
 						  loopCount = 0;
 						  console.log("HOPPER TIL NY ELV");
@@ -2494,6 +2541,22 @@ function sleep(ms){
 						
 						if (snapFar && snapFar.point) {
 							
+							if (riverEndings.has(snapFar.segmentId)) {
+							  console.log("HOPPER DIREKTE TIL SLUTT (extended)");
+							
+							  const end = riverEndings.get(snapFar.segmentId);
+							
+							  current = {
+							    lat: end.lat,
+							    lng: end.lng
+							  };
+							
+							  poly.addLatLng([current.lat, current.lng]);
+							
+							  break;
+							}
+
+							
 							stepsSinceSnap = 0;
 							
 						    if (snapFar.segmentId === segmentId) {
@@ -2501,13 +2564,13 @@ function sleep(ms){
 							  continue;
 						    }
 
-							
+							/*
 							if (processedRiverSegments.has(snapFar.segmentId)) {
 							  console.log("SKIPPER (extended) segment:", snapFar.segmentId);
 							  continue;
 							}
 
-						  processedRiverSegments.add(snap.segmentId);
+						  processedRiverSegments.add(snap.segmentId);*/
 
 						  loopCount = 0;
 						  console.log("UTVIDET HOPP");
@@ -2576,10 +2639,19 @@ function sleep(ms){
 				  poly.addLatLng([current.lat, current.lng]);
 				  path.push([current.lat, current.lng, "river"]);
 				
-				  if (isInWater(current.lat, current.lng)) {
-				    console.log("TREFFER INNSJØ/KYST – STOPPER");
-				    break;
-				  }
+				  
+					if (isInWater(current.lat, current.lng)) {
+					  console.log("TREFFER INNSJØ/KYST – STOPPER");
+					
+					  // ✅ LAGRE SLUTTPUNKT FOR DENNE ELVA
+					  riverEndings.set(segmentId, {
+					    lat: current.lat,
+					    lng: current.lng
+					  });
+					
+					  break;
+					}
+
 				
 				  if (i % 5 === 0) {
 				    await new Promise(requestAnimationFrame);
