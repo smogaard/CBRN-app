@@ -853,8 +853,10 @@
 		        if (flowLayer) {
 		      
 			        flowLayer.addTo(map);
-			        flowLayer.bringToFront();
 
+              if (flowLayer.eachLayer) {
+                flowLayer.eachLayer(l => l.bringToFront());
+              }
 		        }
 		      });
 		
@@ -2620,6 +2622,20 @@
               // ✅ siste stopp
               break;
             }	
+            
+            // ✅ DEM FLOW
+            if (!onRiver) {
+              const next = await getSteepestDirectionDEM(
+                current.lat,
+                current.lng,
+                30
+              );
+
+              if (!next) break;
+
+              current = next;
+            }
+
 				  
             if (isInWater(current.lat, current.lng)) {
               console.log("TREFFER INNSJØ/KYST – STOPPER");
@@ -2636,10 +2652,7 @@
 				
             if (i % 5 === 0) {
               await new Promise(requestAnimationFrame);
-            }
-				
-				    continue;
-				
+            }								
 			    }
 
 			    // await connectFlowsToWater(poly);
