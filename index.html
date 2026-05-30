@@ -2463,7 +2463,13 @@
                 break;
               }
 				
-				      const next = riverLine[nextIndex];	  
+				      const next = riverLine[nextIndex];
+              
+              if (!next) {
+                console.log("Ingen neste punkt");
+                break;
+              }
+	  
 					  
               if (hits >= 2) {
                 hopAttempts++;
@@ -2604,20 +2610,23 @@
                 continue;
               }
               
-              // ✅ 3: fallback
-              console.log("FALLBACK → nærmeste elv");
               
-              const nearest = findNearestStream(current);
-              
-              if (nearest) {
-                current = {
-                  lat: nearest[0],
-                  lng: nearest[1]
-                };
+              // ✅ 3: fallback (KUN hvis vi IKKE er på elv)
+              if (!onRiver) {
 
-                cameFromFallback = true;						
-                continue;
+                const nearest = findNearestStream(current);
+
+                if (nearest) {
+                  current = {
+                    lat: nearest[0],
+                    lng: nearest[1]
+                  };
+
+                  cameFromFallback = true;
+                  continue;
+                }
               }
+
               
               // ✅ siste stopp
               break;
