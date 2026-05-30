@@ -2437,7 +2437,50 @@
                 break;
               }
 
-              let nextIndex = riverIndex + 1;
+              
+              let idx1 = riverIndex + 1;
+              let idx2 = riverIndex - 1;
+
+              let next = null;
+
+              if (riverLine[idx1] && riverLine[idx2]) {
+
+                const p1 = {
+                  lat: riverLine[idx1][1],
+                  lng: riverLine[idx1][0]
+                };
+
+                const p2 = {
+                  lat: riverLine[idx2][1],
+                  lng: riverLine[idx2][0]
+                };
+
+                const z1 = await getElevation(p1.lat, p1.lng);
+                const z2 = await getElevation(p2.lat, p2.lng);
+
+                next = z1 < z2 ? p1 : p2;
+                riverIndex = z1 < z2 ? idx1 : idx2;
+
+              } else if (riverLine[idx1]) {
+
+                next = {
+                  lat: riverLine[idx1][1],
+                  lng: riverLine[idx1][0]
+                };
+                riverIndex = idx1;
+
+              } else if (riverLine[idx2]) {
+
+                next = {
+                  lat: riverLine[idx2][1],
+                  lng: riverLine[idx2][0]
+                };
+                riverIndex = idx2;
+
+              } else {
+                break;
+              }
+
                             
               if (nextIndex >= riverLine.length) {
 
