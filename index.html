@@ -1971,7 +1971,7 @@
             console.log("STOP – ingen lavere punkt");
             break;
           }
-
+        
           current = next;
         }
 
@@ -2099,6 +2099,42 @@
 
 
 		
+      function fixRiverDirection(riverLine, riverIndex, current, lastPoint) {
+        if (!riverLine || riverIndex < 1 || riverIndex >= riverLine.length - 1 || !lastPoint) {
+          return riverIndex;
+        }
+
+        const pPrev = riverLine[riverIndex - 1];
+        const pNext = riverLine[riverIndex + 1];
+
+        const vFlow = {
+          x: current.lng - lastPoint[1],
+          y: current.lat - lastPoint[0]
+        };
+
+        const v1 = {
+          x: pNext[0] - current.lng,
+          y: pNext[1] - current.lat
+        };
+
+        const v2 = {
+          x: pPrev[0] - current.lng,
+          y: pPrev[1] - current.lat
+        };
+
+        const dot1 = vFlow.x * v1.x + vFlow.y * v1.y;
+        const dot2 = vFlow.x * v2.x + vFlow.y * v2.y;
+
+        if (dot1 > dot2) {
+          return Math.min(riverLine.length - 1, riverIndex + 1);
+        } else {
+          return Math.max(0, riverIndex - 1);
+        }
+      }
+
+
+
+
     	async function createFlowLayer(pos) {
         const startPoints = generateStartPoints(pos, 30, 12);
         const layers = [];
@@ -2467,6 +2503,14 @@
                       lat: snap.point[0],
                       lng: snap.point[1]
                     };
+                    
+                    riverIndex = fixRiverDirection(
+                      riverLine,
+                      riverIndex,
+                      current,
+                      lastPoint
+                    );
+
               
                     continue;
                   }
@@ -2666,6 +2710,11 @@
               const prevLat = current.lat;
               const prevLng = current.lng;
 
+              
+              // ✅ lagre posisjon før flytt
+              lastPoint = [current.lat, current.lng];
+
+
               current = next;
 
               // ✅ sjekk om vi faktisk kom videre
@@ -2702,6 +2751,13 @@
                     lat: snap.point[0],
                     lng: snap.point[1]
                   };
+                  
+                  riverIndex = fixRiverDirection(
+                    riverLine,
+                    riverIndex,
+                    current,
+                    lastPoint
+                  );
 
                   noProgressCount = 0;
                   continue;
@@ -2747,6 +2803,14 @@
                       lat: snap.point[0],
                       lng: snap.point[1]
                     };
+
+                    riverIndex = fixRiverDirection(
+                      riverLine,
+                      riverIndex,
+                      current,
+                      lastPoint
+                    );
+
 
                     continue;
                   }
@@ -2896,6 +2960,14 @@
                   lat: snap.point[0],
                   lng: snap.point[1]
                 };
+
+                  riverIndex = fixRiverDirection(
+                    riverLine,
+                    riverIndex,
+                    current,
+                    lastPoint
+                  );
+
             
                 cameFromSnap = true;   // ✅ NY
             
@@ -2960,8 +3032,15 @@
                   lng: snapFar.point[1]
                 };
 
-                cameFromSnap = true;
+                riverIndex = fixRiverDirection(
+                  riverLine,
+                  riverIndex,
+                  current,
+                  lastPoint
+                );
                 
+                cameFromSnap = true;
+
                 poly.addLatLng([current.lat, current.lng]);
                 continue;
               }
