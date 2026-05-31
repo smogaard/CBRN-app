@@ -2217,11 +2217,7 @@
             
                   for (let f of data.features) {
                     
-                    const fid = f.properties.fid;
-
-                    if (tracedSegments.has(fid)) {
-                      continue;   // ✅ hopper over elver du allerede har brukt
-                    }
+                    const fid = f.properties.fid; 
 
                     const geom = f.geometry;
                     if (!geom) continue;
@@ -2269,24 +2265,30 @@
                 riverIndex = bestIndex;
                 segmentId = bestFeature.properties.fid;
 
-                tracedSegments.add(segmentId);
-
                 
-                // ✅ SJEKK OM ELVA ALLEREDE ER TRACET
+                // ✅ hvis elva allerede er kjent → hopp til slutten
                 if (riverEndings.has(segmentId)) {
-                  console.log("ELV ALLEREDE TRACET → hopper til slutt");
-              
+
+                  console.log("BRUKER EKSISTERENDE ELV");
+
                   const end = riverEndings.get(segmentId);
-              
+
                   current = {
                     lat: end.lat,
                     lng: end.lng
                   };
-              
+
                   poly.addLatLng([current.lat, current.lng]);
-              
-                  break; // ✅ stopp denne flowen
+
+                  break;
                 }
+
+                // ✅ ellers: marker som ny
+
+                tracedSegments.add(segmentId);
+
+                
+               
 
               
                 const earlyKey = segmentId + "_" + bestIndex;
