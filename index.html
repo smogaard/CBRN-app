@@ -2544,21 +2544,29 @@
 
 
                 // ✅ dropp kandidater som går oppover
-                const valid1 = dz1 >= -2.0;
-                const valid2 = dz2 >= -2.0;
+                const valid1 = dz1 >= -5.0;
+                const valid2 = dz2 >= -5.0;
 
                 const score1 = valid1 ? dz1 * 10 : -9999;
                 const score2 = valid2 ? dz2 * 10: -9999;
-``
-                if (score1 >= score2) {
-                  next = p1;
-                  riverIndex = idx1;
-                  lastDirection = d1;
-                } else {
-                  next = p2;
-                  riverIndex = idx2;
-                  lastDirection = d2;
-                }
+
+                
+                if (score1 === -9999 && score2 === -9999) {
+                  console.log("INGEN GYLDIG RETNING – prøver neste punkt");
+
+                  riverIndex += 1;
+
+                  if (riverLine[riverIndex]) {
+                    current = {
+                      lat: riverLine[riverIndex][1],
+                      lng: riverLine[riverIndex][0]
+                    };
+                    continue;
+                  } else {
+                    break;
+                  }
+                } else if (score1 >= score2) {
+
               } else if (riverLine[idx1]) {
 
                 next = {
@@ -2589,17 +2597,17 @@
               }
 
               
+              const prevPoint = lastPoint;
+
               current = next;
 
               poly.addLatLng([current.lat, current.lng]);
               path.push([current.lat, current.lng, "river"]);
 
-              lastPoint = [current.lat, current.lng]; 
-              
-              // ✅ STUCK DETEKSJON
-              if (lastPoint) {
+              // ✅ STUCK DETEKSJON (nå riktig!)
+              if (prevPoint) {
                 const moveDist = distMeters(
-                  { lat: lastPoint[0], lng: lastPoint[1] },
+                  { lat: prevPoint[0], lng: prevPoint[1] },
                   current
                 );
 
@@ -2614,10 +2622,14 @@
                       lng: riverLine[riverIndex][0]
                     };
 
+                    lastPoint = [current.lat, current.lng];
                     continue;
                   }
                 }
               }
+
+              // ✅ oppdater til slutt
+              lastPoint = [current.lat, current.lng];
 
 
              					  
