@@ -2577,7 +2577,7 @@
                 if (score1 === -9999 && score2 === -9999) {
                   console.log("INGEN GYLDIG RETNING – prøver neste punkt");
 
-                  riverIndex += 1;
+                  riverIndex += 2;
 
                   if (riverLine[riverIndex]) {
                     current = {
@@ -2660,7 +2660,67 @@
               
               const prevPoint = lastPoint;
 
+              
+              const oldIndex = riverIndex;
+              const prevLat = current.lat;
+              const prevLng = current.lng;
+
               current = next;
+
+              // ✅ sjekk om vi faktisk kom videre
+              if (
+                riverIndex === oldIndex ||
+                (
+                  Math.abs(current.lat - prevLat) < 0.000001 &&
+                  Math.abs(current.lng - prevLng) < 0.000001
+                )
+              ) {
+                console.log("INGEN FREMDRIFT I SEGMENT → tving hopp");
+
+                let jumped = false;
+
+                for (let step = 1; step <= 8; step++) {
+                  const idx = oldIndex + step;
+
+                  if (riverLine[idx]) {
+                    current = {
+                      lat: riverLine[idx][1],
+                      lng: riverLine[idx][0]
+                    };
+                    riverIndex = idx;
+                    jumped = true;
+                    break;
+                  }
+                }
+
+                if (!jumped) {
+                  console.log("FÅR IKKE FREMGANG → prøver nytt segment");
+
+                  const snap = await snapToNextRiver(
+                    current,
+                    segmentId,
+                    lastPoint,
+                    40,
+                    true
+                  );
+
+                  if (snap) {
+                    riverLine = snap.line;
+                    riverIndex = snap.index;
+                    segmentId = snap.segmentId;
+
+                    current = {
+                      lat: snap.point[0],
+                      lng: snap.point[1]
+                    };
+
+                    continue;
+                  }
+
+                  break;
+                }
+              }
+
 
               poly.addLatLng([current.lat, current.lng]);
               path.push([current.lat, current.lng, "river"]);
