@@ -2207,7 +2207,9 @@
                 let bestLine = null;
                 let bestIndex = -1;
                 let bestDist = Infinity;
-                let bestFeature = null; 
+                let bestFeature = null;
+                
+                const elevCurrent = await getElevationCached(current.lat, current.lng);
             
                 for (let key in loadedTiles) {
                   if (!key.startsWith("elvis")) continue;
@@ -2215,8 +2217,6 @@
                   const data = loadedTiles[key];
                   if (!data) continue;
 
-                  const elevCurrent = await getElevationCached(current.lat, current.lng);
-            
                   for (let f of data.features) {
                     
                     const fid = f.properties.fid; 
