@@ -2117,6 +2117,7 @@
           let riverIndex = -1;
           let segmentId = null;
           let lastPoint = null;
+          let lastDirection = null;
           let lastDist = Infinity;
           let stuckCounter = 0;
           let hopAttempts = 0;
@@ -2484,6 +2485,7 @@
 
               if (riverLine[idx1] && riverLine[idx2]) {
 
+
                 const p1 = {
                   lat: riverLine[idx1][1],
                   lng: riverLine[idx1][0]
@@ -2496,31 +2498,40 @@
 
                 const z1 = await getElevationCached(p1.lat, p1.lng);
                 const z2 = await getElevationCached(p2.lat, p2.lng);
+                const z0 = await getElevationCached(current.lat, current.lng);
 
-                const dist1 = lastPoint
-                  ? distMeters({ lat: lastPoint[0], lng: lastPoint[1] }, p1)
-                  : 9999;
-
-                const dist2 = lastPoint
-                  ? distMeters({ lat: lastPoint[0], lng: lastPoint[1] }, p2)
-                  : 9999;
-
-                if (z1 !== undefined && z2 !== undefined) {
-                  if (z1 < z2 && dist1 > 1) {
-                    next = p1;
-                    riverIndex = idx1;
-                  } else if (dist2 > 1) {
-                    next = p2;
-                    riverIndex = idx2;
-                  } else {
-                    next = p1;
-                    riverIndex = idx1;
-                  }
-                } else {
-                  next = p1;
-                  riverIndex = idx1;
+                // ✅ beregn retning (vektor)
+                function dir(a, b) {
+                  return {
+                    x: b.lng - a.lng,
+                    y: b.lat - a.lat
+                  };
                 }
 
+                const d1 = dir(current, p1);
+                const d2 = dir(current, p2);
+
+                function dot(a, b) {
+                  return a.x * b.x + a.y * b.y;
+                }
+
+                const score1 =
+                  (z0 !== undefined && z1 !== undefined ? (z0 - z1) : 0) +
+                  (lastDirection ? dot(lastDirection, d1) * 5 : 0);
+
+                const score2 =
+                  (z0 !== undefined && z2 !== undefined ? (z0 - z2) : 0) +
+                  (lastDirection ? dot(lastDirection, d2) * 5 : 0);
+
+                if (score1 >= score2) {
+                  next = p1;
+                  riverIndex = idx1;
+                  lastDirection = d1;
+                } else {
+                  next = p2;
+                  riverIndex = idx2;
+                  lastDirection = d2;
+                }
               } else if (riverLine[idx1]) {
 
                 next = {
