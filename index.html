@@ -2360,7 +2360,7 @@
 				      }*/
 				
 				      const key =
-      				  current.lat.toFixed(5) + "," + current.lng.toFixed(5);
+      				  current.lat.toFixed(4) + "," + current.lng.toFixed(4);
 				
 			      	// ✅ legg til i historikk
 				      recentPositions.push(key);
@@ -2373,7 +2373,7 @@
 				      // ✅ tell hvor mange ganger samme punkt dukker opp
 				      let hits = recentPositions.filter(k => k === key).length;
 				
-				      if (hits >= 3) {
+				      if (hits >= 6 && stepsSinceSnap > 8) {
 				
 				        loopCount++;
 				
