@@ -182,6 +182,8 @@
       let gridLayer;
 	    //let processedRiverSegments = new Set();
 	    let riverEndings = new Map();
+
+      const tracedSegments = new Set();
 	  
 	    const failedTransitions = new Set();
 
@@ -2155,8 +2157,10 @@
               );
 
             visited.add(key);
-
-            path.push([current.lat, current.lng]);
+            
+            if (!onRiver) {
+              path.push([current.lat, current.lng]);
+            }
             
             if (i % 100 === 0) {
               console.log("pos:", current.lat, current.lng);
@@ -2212,6 +2216,13 @@
                   if (!data) continue;
             
                   for (let f of data.features) {
+                    
+                    const fid = f.properties.fid;
+
+                    if (tracedSegments.has(fid)) {
+                      continue;   // ✅ hopper over elver du allerede har brukt
+                    }
+
                     const geom = f.geometry;
                     if (!geom) continue;
             
@@ -2247,6 +2258,8 @@
                 riverLine = bestLine;
                 riverIndex = bestIndex;
                 segmentId = bestFeature.properties.fid;
+
+                tracedSegments.add(segmentId);
 
                 
                 // ✅ SJEKK OM ELVA ALLEREDE ER TRACET
@@ -2457,36 +2470,35 @@
 
                 const z1 = await getElevationCached(p1.lat, p1.lng);
                 const z2 = await getElevationCached(p2.lat, p2.lng);
-                
-                if (z1 === undefined || z2 === undefined) {
-                    // fallback hvis DEM mangler
+
+                const dist1 = lastPoint
+                  ? distMeters({ lat: lastPoint[0], lng: lastPoint[1] }, p1)
+                  : 9999;
+
+                const dist2 = lastPoint
+                  ? distMeters({ lat: lastPoint[0], lng: lastPoint[1] }, p2)
+                  : 9999;
+
+                // ✅ unngå å gå bakover / stå stille
+                if (z1 !== undefined && z2 !== undefined) {
+
+                  if (z1 < z2 && dist1 > 1) {
                     next = p1;
                     riverIndex = idx1;
+                  } else if (dist2 > 1) {
+                    next = p2;
+                    riverIndex = idx2;
+                  } else {
+                    next = p1;
+                    riverIndex = idx1;
+                  }
+
                 } else {
-
-                  next = z1 < z2 ? p1 : p2;
-                  riverIndex = z1 < z2 ? idx1 : idx2;
+                  next = p1;
+                  riverIndex = idx1;
                 }
-
-              } else if (riverLine[idx1]) {
-
-                next = {
-                  lat: riverLine[idx1][1],
-                  lng: riverLine[idx1][0]
-                };
-                riverIndex = idx1;
-
-              } else if (riverLine[idx2]) {
-
-                next = {
-                  lat: riverLine[idx2][1],
-                  lng: riverLine[idx2][0]
-                };
-                riverIndex = idx2;
-
-              } else {
-                break;
               }
+
 
               
               current = next;
