@@ -2529,7 +2529,7 @@
 
 						
               // ✅ 1: vanlig hopp
-              if (snap && snap.point) {
+              if (snap && snap.point && snap.point[0] != null && snap.point[1] != null) {
                 
                 if (riverEndings.has(snap.segmentId)) {
                   console.log("HOPPER DIREKTE TIL SLUTT");
@@ -2595,7 +2595,7 @@
                 allowBacktracking
               );
               
-              if (snapFar && snapFar.point) {
+              if (snapFar && snapFar.point && snapFar.point[0] != null && snapFar.point[1] != null) {
                 
                 if (riverEndings.has(snapFar.segmentId)) {
                   console.log("HOPPER DIREKTE TIL SLUTT (extended)");
