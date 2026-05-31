@@ -2501,12 +2501,35 @@
               }
 
               
-              let idx1 = riverIndex + 1;
-              let idx2 = riverIndex - 1;
+             
+              function findNextValidIndex(startIndex, direction) {
+                for (let step = 1; step <= 5; step++) {
+                  const idx = startIndex + direction * step;
+
+                  if (!riverLine[idx]) continue;
+
+                  const lat = riverLine[idx][1];
+                  const lng = riverLine[idx][0];
+
+                  // ✅ sørg for at punktet faktisk er annerledes
+                  if (
+                    Math.abs(lat - current.lat) > 0.000001 ||
+                    Math.abs(lng - current.lng) > 0.000001
+                  ) {
+                    return idx;
+                  }
+                }
+
+                return null;
+              }
+
+              let idx1 = findNextValidIndex(riverIndex, +1);
+              let idx2 = findNextValidIndex(riverIndex, -1);
+
 
               let next = null;
 
-              if (riverLine[idx1] && riverLine[idx2]) {
+              if (idx1 !== null && idx2 !== null) {
 
 
                 const p1 = {
@@ -2577,9 +2600,35 @@
                   riverIndex = idx2;
 
                 }
+                
+                // ✅ FAILSAFE: hvis next == current → tving fremover
+                if (
+                  Math.abs(next.lat - current.lat) < 0.000001 &&
+                  Math.abs(next.lng - current.lng) < 0.000001
+                ) {
+                  console.log("NEXT == CURRENT → tving frem");
+
+                  let jumped = false;
+
+                  for (let step = 1; step <= 5; step++) {
+                    const idx = riverIndex + step;
+
+                    if (riverLine[idx]) {
+                      next = {
+                        lat: riverLine[idx][1],
+                        lng: riverLine[idx][0]
+                      };
+                      riverIndex = idx;
+                      jumped = true;
+                      break;
+                    }
+                  }
+
+                  if (!jumped) break;
+                }
 
 
-              } else if (riverLine[idx1]) {
+              } else if (idx1 !== null) {
 
                 next = {
                   lat: riverLine[idx1][1],
@@ -2587,7 +2636,7 @@
                 };
                 riverIndex = idx1;
 
-              } else if (riverLine[idx2]) {
+              } else if (idx2 !== null) {
 
                 next = {
                   lat: riverLine[idx2][1],
@@ -2623,20 +2672,29 @@
                   current
                 );
 
-                if (moveDist < 0.5) {
-                  console.log("STÅR FAST – hopper videre");
+                if (moveDist < 1.0) {
+                  console.log("STÅR FAST – tvinger frem");
 
-                  riverIndex += 1;
+                  let jumped = false;
 
-                  if (riverLine[riverIndex]) {
-                    current = {
-                      lat: riverLine[riverIndex][1],
-                      lng: riverLine[riverIndex][0]
-                    };
+                  for (let step = 1; step <= 5; step++) {
+                    const idx = riverIndex + step;
 
-                    lastPoint = [current.lat, current.lng];
-                    continue;
+                    if (riverLine[idx]) {
+                      current = {
+                        lat: riverLine[idx][1],
+                        lng: riverLine[idx][0]
+                      };
+                      riverIndex = idx;
+                      jumped = true;
+                      break;
+                    }
                   }
+
+                  if (!jumped) break;
+
+                  lastPoint = [current.lat, current.lng];
+                  continue;
                 }
               }
 
