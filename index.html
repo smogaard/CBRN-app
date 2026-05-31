@@ -2214,6 +2214,8 @@
             
                   const data = loadedTiles[key];
                   if (!data) continue;
+
+                  const elevCurrent = await getElevationCached(current.lat, current.lng);
             
                   for (let f of data.features) {
                     
@@ -2235,16 +2237,7 @@
             
                         const d = distMeters(current, pt);
                         
-                        const elevCurrent = await getElevationCached(current.lat, current.lng);
-                        const elevTarget = await getElevationCached(pt[0], pt[1]);
-
-                        // ❌ dropp hvis target ligger mye høyere (fjellrygg)
-                        if (elevTarget !== undefined && elevCurrent !== undefined) {
-                          if (elevTarget > elevCurrent + 5) {
-                            continue;
-                          }
-                        }
-            
+                                   
                       
                         if (d < bestDist) {
                           bestDist = d;
@@ -2260,6 +2253,22 @@
             
               
                 if (!bestLine) continue;
+
+                
+                const pt = [
+                  bestLine[bestIndex][1],
+                  bestLine[bestIndex][0]
+                ];
+
+                const elevTarget = await getElevationCached(pt[0], pt[1]);
+
+                if (elevTarget !== undefined && elevCurrent !== undefined) {
+                  if (elevTarget > elevCurrent + 5) {
+                    console.log("DROP SNAP – uphill");
+                    continue;
+                  }
+                }
+
               
                 riverLine = bestLine;
                 riverIndex = bestIndex;
