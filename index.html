@@ -2364,6 +2364,16 @@
 				
 			      	// ✅ legg til i historikk
 				      recentPositions.push(key);
+              
+              // ✅ HARD STOP hvis vi står helt fast
+              if (recentPositions.length >= 10) {
+                const unique = new Set(recentPositions);
+                if (unique.size <= 2) {
+                  console.log("HARD STOP – står helt fast");
+                  break;
+                }
+              }
+
 				
 				      // behold kun siste 5
 				      if (recentPositions.length > 5) {
@@ -2401,10 +2411,23 @@
 				            120,
 					          allowBacktracking
                   );
-				
+
+                  
 				          if (snap && snap.point) {
-						
-					          if (riverEndings.has(snap.segmentId)) {
+
+                    const zCurrent = await getElevationCached(current.lat, current.lng);
+                    const zSnap = await getElevationCached(snap.point[0], snap.point[1]);
+
+                    
+                    if (zSnap !== undefined && zCurrent !== undefined) {
+                      if (zSnap > zCurrent + 2) {
+                        console.log("DROP SNAP – går oppover");
+                        continue;
+                      }
+                    }
+
+					          
+                    if (riverEndings.has(snap.segmentId)) {
 					            console.log("HOPPER DIREKTE TIL SLUTT (retry)");
 					
 					            const end = riverEndings.get(snap.segmentId);
@@ -2515,21 +2538,18 @@
                   return a.x * b.x + a.y * b.y;
                 }
 
-                const dz1 = z0 !== undefined && z1 !== undefined ? (z0 - z1) : 0;
-                const dz2 = z0 !== undefined && z2 !== undefined ? (z0 - z2) : 0;
+               
+                const dz1 = z0 !== undefined && z1 !== undefined ? (z0 - z1) : -9999;
+                const dz2 = z0 !== undefined && z2 !== undefined ? (z0 - z2) : -9999;
+
 
                 // ✅ dropp kandidater som går oppover
-                const valid1 = dz1 >= -0.5;
-                const valid2 = dz2 >= -0.5;
+                const valid1 = dz1 >= -2.0;
+                const valid2 = dz2 >= -2.0;
 
-                const score1 =
-                  (valid1 ? dz1 : -9999) +
-                  (lastDirection ? dot(lastDirection, d1) * 0.5 : 0);
-
-                const score2 =
-                  (valid2 ? dz2 : -9999) +
-                  (lastDirection ? dot(lastDirection, d2) * 0.5 : 0);
-
+                const score1 = valid1 ? dz1 * 10 : -9999;
+                const score2 = valid2 ? dz2 * 10: -9999;
+``
                 if (score1 >= score2) {
                   next = p1;
                   riverIndex = idx1;
@@ -2575,6 +2595,30 @@
               path.push([current.lat, current.lng, "river"]);
 
               lastPoint = [current.lat, current.lng]; 
+              
+              // ✅ STUCK DETEKSJON
+              if (lastPoint) {
+                const moveDist = distMeters(
+                  { lat: lastPoint[0], lng: lastPoint[1] },
+                  current
+                );
+
+                if (moveDist < 0.5) {
+                  console.log("STÅR FAST – hopper videre");
+
+                  riverIndex += 1;
+
+                  if (riverLine[riverIndex]) {
+                    current = {
+                      lat: riverLine[riverIndex][1],
+                      lng: riverLine[riverIndex][0]
+                    };
+
+                    continue;
+                  }
+                }
+              }
+
 
              					  
               if (hits >= 2) {
@@ -2605,6 +2649,18 @@
               // ✅ 1: vanlig hopp
               if (snap && snap.point && snap.point[0] != null && snap.point[1] != null) {
                 
+                const zCurrent = await getElevationCached(current.lat, current.lng);
+                const zSnap = await getElevationCached(snap.point[0], snap.point[1]);
+
+                
+                if (zSnap !== undefined && zCurrent !== undefined) {
+                  if (zSnap > zCurrent + 2) {
+                    console.log("DROP SNAP – går oppover");
+                    continue;
+                  }
+                }
+
+
                 if (riverEndings.has(snap.segmentId)) {
                   console.log("HOPPER DIREKTE TIL SLUTT");
                 
@@ -2758,20 +2814,32 @@
               // ✅ FALLBACK (flyttet hit – RIKTIG sted)
               const nearest = findNearestStream(current);
 
+              
               if (nearest) {
                 const d = distMeters(current, nearest);
 
                 if (d < 40) {   // viktig terskel
-                  console.log("DEM fallback → snap");
 
-                  current = {
-                    lat: nearest[0],
-                    lng: nearest[1]
-                  };
+                  const zCurrent = await getElevationCached(current.lat, current.lng);
+                  const zNearest = await getElevationCached(nearest[0], nearest[1]);
 
-                  cameFromFallback = true;
+                  if (zNearest !== undefined && zCurrent !== undefined) {
+                    if (zNearest > zCurrent + 2) {
+                      console.log("DROP DEM fallback – går oppover");
+                    } else {
+                      console.log("DEM fallback → snap");
+
+                      current = {
+                        lat: nearest[0],
+                        lng: nearest[1]
+                      };
+
+                      cameFromFallback = true;
+                    }
+                  }
                 }
               }
+
             }
 
 				  
