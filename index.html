@@ -2515,13 +2515,20 @@
                   return a.x * b.x + a.y * b.y;
                 }
 
+                const dz1 = z0 !== undefined && z1 !== undefined ? (z0 - z1) : 0;
+                const dz2 = z0 !== undefined && z2 !== undefined ? (z0 - z2) : 0;
+
+                // ✅ dropp kandidater som går oppover
+                const valid1 = dz1 >= -0.5;
+                const valid2 = dz2 >= -0.5;
+
                 const score1 =
-                  (z0 !== undefined && z1 !== undefined ? (z0 - z1) : 0) +
-                  (lastDirection ? dot(lastDirection, d1) * 5 : 0);
+                  (valid1 ? dz1 : -9999) +
+                  (lastDirection ? dot(lastDirection, d1) * 0.5 : 0);
 
                 const score2 =
-                  (z0 !== undefined && z2 !== undefined ? (z0 - z2) : 0) +
-                  (lastDirection ? dot(lastDirection, d2) * 5 : 0);
+                  (valid2 ? dz2 : -9999) +
+                  (lastDirection ? dot(lastDirection, d2) * 0.5 : 0);
 
                 if (score1 >= score2) {
                   next = p1;
