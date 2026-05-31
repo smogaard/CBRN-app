@@ -2455,11 +2455,18 @@
                   lng: riverLine[idx2][0]
                 };
 
-                const z1 = await getElevation(p1.lat, p1.lng);
-                const z2 = await getElevation(p2.lat, p2.lng);
+                const z1 = await getElevationCached(p1.lat, p1.lng);
+                const z2 = await getElevationCached(p2.lat, p2.lng);
+                
+                if (z1 === undefined || z2 === undefined) {
+                    // fallback hvis DEM mangler
+                    next = p1;
+                    riverIndex = idx1;
+                } else {
 
-                next = z1 < z2 ? p1 : p2;
-                riverIndex = z1 < z2 ? idx1 : idx2;
+                  next = z1 < z2 ? p1 : p2;
+                  riverIndex = z1 < z2 ? idx1 : idx2;
+                }
 
               } else if (riverLine[idx1]) {
 
