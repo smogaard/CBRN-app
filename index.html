@@ -2481,6 +2481,16 @@
                 break;
               }
 
+              
+              current = next;
+
+              poly.addLatLng([current.lat, current.lng]);
+
+              lastPoint = [current.lat, current.lng];
+
+              continue;
+
+
                             
               if (nextIndex >= riverLine.length) {
 
@@ -2513,6 +2523,19 @@
                 break;
               }
 	  
+              current = {
+                lat: next[1],
+                lng: next[0]
+              };
+
+              path.push([current.lat, current.lng, "river"]);   // ✅ VIKTIG
+
+              poly.addLatLng([current.lat, current.lng]);
+
+              lastPoint = [current.lat, current.lng];
+
+              continue;
+
 					  
               if (hits >= 2) {
                 hopAttempts++;
@@ -2528,7 +2551,7 @@
                 { lat: current.lat, lng: current.lng },
                 segmentId,
                 lastPoint,
-                40,
+                20,
                 allowBacktracking
               );
 
@@ -2596,7 +2619,7 @@
                 { lat: current.lat, lng: current.lng },
                 segmentId,
                 lastPoint,
-                120,
+                60,
                 allowBacktracking
               );
               
