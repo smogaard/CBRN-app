@@ -2238,6 +2238,16 @@
                         const pt = [line[i][1], line[i][0]];
             
                         const d = distMeters(current, pt);
+                        
+                        const elevCurrent = await getElevationCached(current.lat, current.lng);
+                        const elevTarget = await getElevationCached(pt[0], pt[1]);
+
+                        // ❌ dropp hvis target ligger mye høyere (fjellrygg)
+                        if (elevTarget !== undefined && elevCurrent !== undefined) {
+                          if (elevTarget > elevCurrent + 5) {
+                            continue;
+                          }
+                        }
             
                       
                         if (d < bestDist) {
@@ -2548,13 +2558,19 @@
                 break;
               }
 						
-              const snap = await snapToNextRiver(
-                { lat: current.lat, lng: current.lng },
-                segmentId,
-                lastPoint,
-                20,
-                allowBacktracking
-              );
+              
+              let snap = null;
+
+              if (stepsSinceSnap > 10) {
+                snap = await snapToNextRiver(
+                  { lat: current.lat, lng: current.lng },
+                  segmentId,
+                  lastPoint,
+                  20,
+                  allowBacktracking
+                );
+              }
+
 
 						
               // ✅ 1: vanlig hopp
@@ -2564,6 +2580,18 @@
                   console.log("HOPPER DIREKTE TIL SLUTT");
                 
                   const end = riverEndings.get(snap.segmentId);
+
+                                    
+                  const moveDist = distMeters(
+                    { lat: current.lat, lng: current.lng },
+                    snap.point
+                  );
+
+                  if (moveDist < 5) {
+                    console.log("DROP SNAP – for liten bevegelse");
+                    continue;
+                  }
+
                 
                   current = {
                   lat: end.lat,
@@ -2620,7 +2648,7 @@
                 { lat: current.lat, lng: current.lng },
                 segmentId,
                 lastPoint,
-                60,
+                25,
                 allowBacktracking
               );
               
