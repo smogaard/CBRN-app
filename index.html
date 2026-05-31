@@ -2281,12 +2281,17 @@
               
                 const earlyKey = segmentId + "_" + bestIndex;
 
-              
-            
+                                        
+                if (!riverLine || !riverLine[riverIndex]) {
+                  console.log("SNAP FEIL: ugyldig riverIndex", riverIndex);
+                  continue;
+                }
+
                 current = {
                   lat: riverLine[riverIndex][1],
                   lng: riverLine[riverIndex][0],
                 };
+
             
                 poly.addLatLng([current.lat, current.lng]);
                 path.push([current.lat, current.lng, "river"]);
@@ -2479,9 +2484,7 @@
                   ? distMeters({ lat: lastPoint[0], lng: lastPoint[1] }, p2)
                   : 9999;
 
-                // ✅ unngå å gå bakover / stå stille
                 if (z1 !== undefined && z2 !== undefined) {
-
                   if (z1 < z2 && dist1 > 1) {
                     next = p1;
                     riverIndex = idx1;
@@ -2492,13 +2495,39 @@
                     next = p1;
                     riverIndex = idx1;
                   }
-
                 } else {
                   next = p1;
                   riverIndex = idx1;
                 }
+
+              } else if (riverLine[idx1]) {
+
+                next = {
+                  lat: riverLine[idx1][1],
+                  lng: riverLine[idx1][0]
+                };
+                riverIndex = idx1;
+
+              } else if (riverLine[idx2]) {
+
+                next = {
+                  lat: riverLine[idx2][1],
+                  lng: riverLine[idx2][0]
+                };
+                riverIndex = idx2;
+
+              } else {
+
+                console.log("SLUTT PÅ ELV → stopper");
+                break;
+
               }
 
+
+              if (!next) {
+                console.log("STOPP: next er null (etter valg)");
+                break;
+              }
 
               
               current = next;
