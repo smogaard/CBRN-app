@@ -2637,6 +2637,7 @@
 
             }	
             
+            
             // ✅ DEM FLOW
             if (!onRiver) {
               const next = await getSteepestDirectionDEM(
@@ -2648,23 +2649,26 @@
               if (!next) break;
 
               current = next;
-            }
 
-            // ✅ 3: fallback (KUN hvis vi IKKE er på elv)
-            if (!onRiver) {
-
+              // ✅ FALLBACK (flyttet hit – RIKTIG sted)
               const nearest = findNearestStream(current);
 
               if (nearest) {
-                current = {
-                  lat: nearest[0],
-                  lng: nearest[1]
-                };
+                const d = distMeters(current, nearest);
 
-                cameFromFallback = true;
-                continue;
+                if (d < 40) {   // viktig terskel
+                  console.log("DEM fallback → snap");
+
+                  current = {
+                    lat: nearest[0],
+                    lng: nearest[1]
+                  };
+
+                  cameFromFallback = true;
+                }
               }
-            }  
+            }
+
 				  
             if (isInWater(current.lat, current.lng)) {
               console.log("TREFFER INNSJØ/KYST – STOPPER");
