@@ -2122,6 +2122,7 @@
           let stuckCounter = 0;
           let hopAttempts = 0;
           let loopCount = 0;
+          let noProgressCount = 0;
           let recentPositions = []
           let cameFromFallback = false;
           let cameFromSnap = false;
@@ -2668,6 +2669,7 @@
               current = next;
 
               // ✅ sjekk om vi faktisk kom videre
+              
               if (
                 riverIndex === oldIndex ||
                 (
@@ -2675,6 +2677,38 @@
                   Math.abs(current.lng - prevLng) < 0.000001
                 )
               ) {
+                noProgressCount++;
+              } else {
+                noProgressCount = 0;
+              }
+              
+              if (noProgressCount > 5) {
+                console.log("TVUNGET SEGMENT-BYTE");
+
+                const snap = await snapToNextRiver(
+                  current,
+                  segmentId,
+                  lastPoint,
+                  80,
+                  true
+                );
+
+                if (snap) {
+                  riverLine = snap.line;
+                  riverIndex = snap.index;
+                  segmentId = snap.segmentId;
+
+                  current = {
+                    lat: snap.point[0],
+                    lng: snap.point[1]
+                  };
+
+                  noProgressCount = 0;
+                  continue;
+                }
+              }
+
+              if (noProgressCount > 0) {
                 console.log("INGEN FREMDRIFT I SEGMENT → tving hopp");
 
                 let jumped = false;
