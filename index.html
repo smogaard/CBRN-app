@@ -2630,21 +2630,7 @@
               }
               
               
-              // ✅ 3: fallback (KUN hvis vi IKKE er på elv)
-              if (!onRiver) {
-
-                const nearest = findNearestStream(current);
-
-                if (nearest) {
-                  current = {
-                    lat: nearest[0],
-                    lng: nearest[1]
-                  };
-
-                  cameFromFallback = true;
-                  continue;
-                }
-              }  
+              
               
               // ✅ hvis ingenting annet traff → fortsett langs elva
               continue;
@@ -2664,6 +2650,21 @@
               current = next;
             }
 
+            // ✅ 3: fallback (KUN hvis vi IKKE er på elv)
+            if (!onRiver) {
+
+              const nearest = findNearestStream(current);
+
+              if (nearest) {
+                current = {
+                  lat: nearest[0],
+                  lng: nearest[1]
+                };
+
+                cameFromFallback = true;
+                continue;
+              }
+            }  
 				  
             if (isInWater(current.lat, current.lng)) {
               console.log("TREFFER INNSJØ/KYST – STOPPER");
