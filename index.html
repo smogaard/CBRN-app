@@ -2486,57 +2486,9 @@
 
               poly.addLatLng([current.lat, current.lng]);
 
-              lastPoint = [current.lat, current.lng];
+              lastPoint = [current.lat, current.lng]; 
 
-              continue;
-
-
-                            
-              if (nextIndex >= riverLine.length) {
-
-                console.log("END OF LINE → søker neste segment");
-              
-                const nextSegment = await findNextRiverSegment(
-                  [current.lat, current.lng],
-                  lastPoint, 
-                  segmentId
-                );
-              
-                if (nextSegment) {
-                  riverLine = nextSegment.line;
-                  riverIndex = nextSegment.index;
-              
-                  console.log("FORTSETTER I NY LINJE");
-              
-                  continue;
-                }
-              
-                console.log("INGEN VIDERE ELV → stopper");
-              
-                break;
-              }
-				
-				      const next = riverLine[nextIndex];
-              
-              if (!next) {
-                console.log("Ingen neste punkt");
-                break;
-              }
-	  
-              current = {
-                lat: next[1],
-                lng: next[0]
-              };
-
-              path.push([current.lat, current.lng, "river"]);   // ✅ VIKTIG
-
-              poly.addLatLng([current.lat, current.lng]);
-
-              lastPoint = [current.lat, current.lng];
-
-              continue;
-
-					  
+             					  
               if (hits >= 2) {
                 hopAttempts++;
               }
@@ -2691,11 +2643,11 @@
                   cameFromFallback = true;
                   continue;
                 }
-              }
-
+              }  
               
-              // ✅ siste stopp
-              break;
+              // ✅ hvis ingenting annet traff → fortsett langs elva
+              continue;
+
             }	
             
             // ✅ DEM FLOW
