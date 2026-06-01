@@ -2591,7 +2591,7 @@
                // ❗ filtrer bort punkter som ikke gir bevegelse
                 function isValidMove(p) {
                   const d = distMeters(current, [p.lat, p.lng]);
-                  return d > 2;
+                  return d > 3;
                 }
 
                 // ✅ 1: bevegelses-validering
@@ -2619,42 +2619,61 @@
                 // ✅ KOMBINERT LOGIKK
 
                 if (!moveOk1 && !moveOk2) {
-                  console.log("INGEN GYLDIG RETNING – hopper videre i linja");
+                console.log("INGEN GYLDIG RETNING – søker lengre frem");
 
-                  let moved = false;
+                let moved = false;
 
-                  for (let step = 2; step <= 6; step++) {
-                    const idx = riverIndex + step;
+                // 🔥 søk MYE lengre frem
+                for (let step = 2; step <= 50; step++) {
+                  const idx = riverIndex + step;
 
-                    if (riverLine[idx]) {
-                      const p = {
-                        lat: riverLine[idx][1],
-                        lng: riverLine[idx][0]
-                      };
+                  if (!riverLine[idx]) break;
 
-                      if (distMeters(current, [p.lat, p.lng]) > 2) {
-                        riverIndex = idx;
-                        current = p;
-                        moved = true;
-                        break;
-                      }
+                  const p = {
+                    lat: riverLine[idx][1],
+                    lng: riverLine[idx][0]
+                  };
+
+                  const d = distMeters(current, [p.lat, p.lng]);
+
+                  if (d > 5) {   // <- økt terskel!
+                    console.log("HOPPET", step, "punkter frem");
+                    riverIndex = idx;
+                    current = p;
+                    moved = true;
+                    break;
+                  }
+                }
+
+                // 🔥 prøv også bakover hvis fremover feiler
+                if (!moved) {
+                  for (let step = 2; step <= 50; step++) {
+                    const idx = riverIndex - step;
+
+                    if (!riverLine[idx]) break;
+
+                    const p = {
+                      lat: riverLine[idx][1],
+                      lng: riverLine[idx][0]
+                    };
+
+                    const d = distMeters(current, [p.lat, p.lng]);
+
+                    if (d > 5) {
+                      console.log("HOPPET bakover", step, "punkter");
+                      riverIndex = idx;
+                      current = p;
+                      moved = true;
+                      break;
                     }
                   }
-
-                  if (moved) continue;
-                  break;
-
-                } else if (moveOk1 && elevOk1 && (!moveOk2 || score1 >= score2)) {
-
-                  next = p1;
-                  riverIndex = idx1;
-
-                } else if (moveOk2 && elevOk2) {
-
-                  next = p2;
-                  riverIndex = idx2;
-
                 }
+
+                if (moved) continue;
+
+                console.log("FANT INGEN VEI VIDERE – BRYTER");
+                break;
+              }
 
                 
                 // ✅ FAILSAFE: hvis next == current → tving fremover
