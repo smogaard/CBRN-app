@@ -2587,6 +2587,17 @@
                   lng: riverLine[idx2][0]
                 };
 
+                
+                // ❗ filtrer bort punkter som ikke gir bevegelse
+                function isValidMove(p) {
+                  const d = distMeters(current, [p.lat, p.lng]);
+                  return d > 2;
+                }
+
+                const valid1 = idx1 !== null && isValidMove(p1);
+                const valid2 = idx2 !== null && isValidMove(p2);
+
+
                 const z1 = await getElevationCached(p1.lat, p1.lng);
                 const z2 = await getElevationCached(p2.lat, p2.lng);
                 const z0 = await getElevationCached(current.lat, current.lng);
@@ -2619,32 +2630,45 @@
                 const score2 = valid2 ? dz2 * 10: -9999;
 
                 
-                if (score1 === -9999 && score2 === -9999) {
-                  console.log("INGEN GYLDIG RETNING – prøver neste punkt");
-
-                  riverIndex += 2;
-
-                  if (riverLine[riverIndex]) {
-                    current = {
-                      lat: riverLine[riverIndex][1],
-                      lng: riverLine[riverIndex][0]
-                    };
-                    continue;
-                  } else {
-                    break;
-                  }
                 
-                } else if (score1 >= score2) {
+                if (!valid1 && !valid2) {
+                  console.log("INGEN GYLDIG RETNING – hopper videre i linja");
+
+                  let moved = false;
+
+                  for (let step = 2; step <= 6; step++) {
+                    const idx = riverIndex + step;
+
+                    if (riverLine[idx]) {
+                      const p = {
+                        lat: riverLine[idx][1],
+                        lng: riverLine[idx][0]
+                      };
+
+                      if (distMeters(current, [p.lat, p.lng]) > 2) {
+                        riverIndex = idx;
+                        current = p;
+                        moved = true;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (moved) continue;
+                  break;
+
+                } else if (valid1 && (!valid2 || score1 >= score2)) {
 
                   next = p1;
                   riverIndex = idx1;
 
-                } else {
+                } else if (valid2) {
 
                   next = p2;
                   riverIndex = idx2;
 
                 }
+
                 
                 // ✅ FAILSAFE: hvis next == current → tving fremover
                 if (
