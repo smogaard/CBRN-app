@@ -2588,13 +2588,35 @@
                 };
 
                 
-               function isValidMove(p) {
+               // ❗ filtrer bort punkter som ikke gir bevegelse
+                function isValidMove(p) {
                   const d = distMeters(current, [p.lat, p.lng]);
                   return d > 2;
                 }
 
+                // ✅ 1: bevegelses-validering
                 const moveOk1 = idx1 !== null && isValidMove(p1);
                 const moveOk2 = idx2 !== null && isValidMove(p2);
+
+                // ✅ høyder
+                const z1 = await getElevationCached(p1.lat, p1.lng);
+                const z2 = await getElevationCached(p2.lat, p2.lng);
+                const z0 = await getElevationCached(current.lat, current.lng);
+
+                // ✅ høydeforskjell
+                const dz1 = z0 !== undefined && z1 !== undefined ? (z0 - z1) : -9999;
+                const dz2 = z0 !== undefined && z2 !== undefined ? (z0 - z2) : -9999;
+
+                // ✅ 2: høyde-validering
+                const elevOk1 = dz1 >= -5.0;
+                const elevOk2 = dz2 >= -5.0;
+
+                // ✅ score
+                const score1 = elevOk1 ? dz1 * 10 : -9999;
+                const score2 = elevOk2 ? dz2 * 10 : -9999;
+
+
+                // ✅ KOMBINERT LOGIKK
 
                 if (!moveOk1 && !moveOk2) {
                   console.log("INGEN GYLDIG RETNING – hopper videre i linja");
@@ -2622,12 +2644,12 @@
                   if (moved) continue;
                   break;
 
-                } else if (moveOk1 && (!moveOk2 || score1 >= score2)) {
+                } else if (moveOk1 && elevOk1 && (!moveOk2 || score1 >= score2)) {
 
                   next = p1;
                   riverIndex = idx1;
 
-                } else if (moveOk2) {
+                } else if (moveOk2 && elevOk2) {
 
                   next = p2;
                   riverIndex = idx2;
