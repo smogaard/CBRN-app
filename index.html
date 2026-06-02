@@ -2314,7 +2314,7 @@
 
                 
                 // ✅ hvis elva allerede er kjent → hopp til slutten
-                if (riverEndings.has(segmentId)) {
+                if (riverEndings.has(segmentId) && !onRiver) {
 
                   console.log("BRUKER EKSISTERENDE ELV");
 
@@ -2482,10 +2482,12 @@
 						
 						        stepsSinceSnap = 0;
 											
-					          if (snap.segmentId === segmentId) {
-						          console.log("DROP (retry) – samme segment");
-						          continue;
-					          }
+					          
+                    if (snap.segmentId === segmentId && !allowBacktracking) {
+                      console.log("DROP (retry) – samme segment");
+                      continue;
+                    }
+
 
 						
                     /*if (processedRiverSegments.has(snap.segmentId)) {
@@ -2511,6 +2513,13 @@
                       lastPoint
                     );
 
+                    
+                    // 🔥 LOOP-RECOVERY: tving bevegelse bort fra stuck punkt
+                    if (lastPoint) {
+                      if (riverIndex < riverLine.length - 1) {
+                        riverIndex++;
+                      }
+                    }
               
                     continue;
                   }
@@ -3046,13 +3055,25 @@
                   lng: snap.point[1]
                 };
 
-                  riverIndex = fixRiverDirection(
-                    riverLine,
-                    riverIndex,
-                    current,
-                    lastPoint
-                  );
+                riverIndex = fixRiverDirection(
+                  riverLine,
+                  riverIndex,
+                  current,
+                  lastPoint
+                );
 
+                
+                // 🔥 sørg for at vi ikke står stille etter hopp
+                const testIdx = Math.min(riverIndex + 1, riverLine.length - 1);
+
+                const p = {
+                  lat: riverLine[testIdx][1],
+                  lng: riverLine[testIdx][0]
+                };
+
+                if (distMeters(current, [p.lat, p.lng]) < 1) {
+                  riverIndex = Math.max(0, riverIndex - 1);
+                }
             
                 cameFromSnap = true;   // ✅ NY
             
