@@ -2700,6 +2700,30 @@
                 }
 
 
+                
+                
+                if (
+                  next &&
+                  Math.abs(next.lat - current.lat) < 1e-9 &&
+                  Math.abs(next.lng - current.lng) < 1e-9
+                ) {
+                  console.log("STUCK: next == current → tving indeks-steg");
+
+                  if (riverIndex < riverLine.length - 1) {
+                    riverIndex++;
+                  } else if (riverIndex > 0) {
+                    riverIndex--;
+                  }
+
+                  next = {
+                    lat: riverLine[riverIndex][1],
+                    lng: riverLine[riverIndex][0]
+                  };
+                }
+
+
+
+
                 if (!next) {
                   console.log("KRITISK: next er null");
                   break;
