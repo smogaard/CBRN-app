@@ -2711,11 +2711,10 @@
 
                 
                 
-                if (
-                  next &&
+                if (next &&
                   Math.abs(next.lat - current.lat) < 1e-9 &&
-                  Math.abs(next.lng - current.lng) < 1e-9
-                ) {
+                  Math.abs(next.lng - current.lng) < 1e-9) {
+
                   console.log("STUCK: next == current → tving indeks-steg");
 
                   if (riverIndex < riverLine.length - 1) {
@@ -2724,10 +2723,65 @@
                     riverIndex--;
                   }
 
+                  
                   next = {
                     lat: riverLine[riverIndex][1],
                     lng: riverLine[riverIndex][0]
                   };
+
+                  // 🔥 KRITISK: sørg for at next faktisk gir bevegelse
+                  const d = distMeters(current, [next.lat, next.lng]);
+
+                  if (d < 2) {
+                    console.log("NEXT DEAD → hopper videre");
+
+                    let moved = false;
+
+                    for (let step = 1; step <= 10; step++) {
+                      const idx = riverIndex + step;
+
+                      if (!riverLine[idx]) break;
+
+                      const p = {
+                        lat: riverLine[idx][1],
+                        lng: riverLine[idx][0]
+                      };
+
+                      if (distMeters(current, [p.lat, p.lng]) > 5) {
+                        next = p;
+                        riverIndex = idx;
+                        moved = true;
+                        break;
+                      }
+                    }
+
+                    if (!moved) {
+                      for (let step = 1; step <= 10; step++) {
+                        const idx = riverIndex - step;
+
+                        if (!riverLine[idx]) break;
+
+                        const p = {
+                          lat: riverLine[idx][1],
+                          lng: riverLine[idx][0]
+                        };
+
+                        if (distMeters(current, [p.lat, p.lng]) > 5) {
+                          next = p;
+                          riverIndex = idx;
+                          moved = true;
+                          break;
+                        }
+                      }
+                    }
+
+                    if (!moved) {
+                      console.log("HELT LÅST → gir opp segment");
+                      onRiver = false;
+                      continue;
+                    }
+                  }
+
                 }
 
 
