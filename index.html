@@ -187,6 +187,8 @@
 	  
 	    const failedTransitions = new Set();
 
+      const riverPathCache = new Map();
+
       const SNAP_DIST = 50; // distanse i meter
 
       // =============================
@@ -2351,8 +2353,34 @@
                   lng: riverLine[riverIndex][0],
                 };
 
+                const cacheKey = segmentId + "_" + riverIndex;
+
+                if (riverPathCache.has(cacheKey)) {
+                  console.log("REBRUKER FLOW");
+
+                  const cached = riverPathCache.get(cacheKey);
+
+                  for (const p of cached) {
+                    poly.addLatLng([p.lat, p.lng]);
+                  }
+
+                  break;
+                }
+
             
                 poly.addLatLng([current.lat, current.lng]);
+                
+                const cacheKey = segmentId + "_" + riverIndex;
+
+                if (!riverPathCache.has(cacheKey)) {
+                  riverPathCache.set(cacheKey, []);
+                }
+
+                riverPathCache.get(cacheKey).push({
+                  lat: current.lat,
+                  lng: current.lng
+                });
+
                 path.push([current.lat, current.lng, "river"]);
             
                 onRiver = true;
@@ -2969,6 +2997,18 @@
 
 
               poly.addLatLng([current.lat, current.lng]);
+
+                const cacheKey = segmentId + "_" + riverIndex;
+
+                if (!riverPathCache.has(cacheKey)) {
+                  riverPathCache.set(cacheKey, []);
+                }
+
+                riverPathCache.get(cacheKey).push({
+                  lat: current.lat,
+                  lng: current.lng
+                });
+
               path.push([current.lat, current.lng, "river"]);
 
               // ✅ STUCK DETEKSJON (nå riktig!)
