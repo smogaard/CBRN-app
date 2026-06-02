@@ -2676,14 +2676,33 @@
                 
                 } else if (moveOk1 && elevOk1 && (!moveOk2 || score1 >= score2)) {
 
-                  next = p1;
+                  next = {
+                    lat: p1.lat,
+                    lng: p1.lng
+                  };
                   riverIndex = idx1;
 
                 } else if (moveOk2 && elevOk2) {
 
-                  next = p2;
+                  next = {
+                    lat: p2.lat,
+                    lng: p2.lng
+                  };
                   riverIndex = idx2;
 
+                } else {
+                  // fallback hvis begge er rare
+                  next = {
+                    lat: p1.lat,
+                    lng: p1.lng
+                  };
+                  riverIndex = idx1;
+                }
+
+
+                if (!next) {
+                  console.log("KRITISK: next er null");
+                  break;
                 }
 
 
