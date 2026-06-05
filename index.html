@@ -2998,16 +2998,16 @@
 
               poly.addLatLng([current.lat, current.lng]);
 
-                const cacheKey = segmentId + "_" + riverIndex;
+              let cacheKeyStore = segmentId + "_" + riverIndex;
 
-                if (!riverPathCache.has(cacheKey)) {
-                  riverPathCache.set(cacheKey, []);
-                }
+              if (!riverPathCache.has(cacheKeyStore)) {
+                riverPathCache.set(cacheKeyStore, []);
+              }
 
-                riverPathCache.get(cacheKey).push({
-                  lat: current.lat,
-                  lng: current.lng
-                });
+              riverPathCache.get(cacheKeyStore).push({
+                lat: current.lat,
+                lng: current.lng
+              });
 
               path.push([current.lat, current.lng, "river"]);
 
