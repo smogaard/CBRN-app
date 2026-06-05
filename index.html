@@ -2336,29 +2336,19 @@
 
                 tracedSegments.add(segmentId);
 
-                
-               
-
-              
-                const earlyKey = segmentId + "_" + bestIndex;
-
-                                        
-                if (!riverLine || !riverLine[riverIndex]) {
-                  console.log("SNAP FEIL: ugyldig riverIndex", riverIndex);
-                  continue;
-                }
-
+                // ✅ sett current til snap-punkt
                 current = {
                   lat: riverLine[riverIndex][1],
                   lng: riverLine[riverIndex][0],
                 };
 
-                const cacheKey = segmentId + "_" + riverIndex;
+                // ✅ CACHE-LOOKUP (riktig sted)
+                const cacheKeyLookup = segmentId + "_" + riverIndex;
 
-                if (riverPathCache.has(cacheKey)) {
+                if (riverPathCache.has(cacheKeyLookup)) {
                   console.log("REBRUKER FLOW");
 
-                  const cached = riverPathCache.get(cacheKey);
+                  const cached = riverPathCache.get(cacheKeyLookup);
 
                   for (const p of cached) {
                     poly.addLatLng([p.lat, p.lng]);
@@ -2367,9 +2357,9 @@
                   break;
                 }
 
-            
+                // ✅ legg til første punkt på elva og start cache
                 poly.addLatLng([current.lat, current.lng]);
-                
+
                 const cacheKey = segmentId + "_" + riverIndex;
 
                 if (!riverPathCache.has(cacheKey)) {
@@ -2382,13 +2372,35 @@
                 });
 
                 path.push([current.lat, current.lng, "river"]);
-            
+
                 onRiver = true;
                 loopCount = 0;
                 hopAttempts = 0;
                 continue;
-              }
-            }
+               
+                if (!riverLine || !riverLine[riverIndex]) {
+                  console.log("SNAP FEIL: ugyldig riverIndex", riverIndex);
+                  continue;
+                }
+
+                current = {
+                  lat: riverLine[riverIndex][1],
+                  lng: riverLine[riverIndex][0],
+                };
+
+                const cacheKeyLookup = segmentId + "_" + riverIndex;
+
+                if (riverPathCache.has(cacheKeyLookup)) {
+                  console.log("REBRUKER FLOW");
+
+                  const cached = riverPathCache.get(cacheKeyLookup);
+
+                  
+                  for (const p of cached) {
+                    poly.addLatLng([p.lat, p.lng]);
+                  }
+                  break;
+                }
 
             // ✅ Følg elv punkt-for-punkt
             if (onRiver) {
