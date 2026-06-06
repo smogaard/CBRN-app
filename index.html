@@ -2341,10 +2341,10 @@
                   // ✅ CACHE-LOOKUP (riktig sted)
                   var cacheKey = segmentId + "_" + riverIndex;
 
-                  if (riverPathCache.has(cacheKeyLookup)) {
+                  if (riverPathCache.has(cacheKey)) {
                     console.log("REBRUKER FLOW");
 
-                    const cached = riverPathCache.get(cacheKeyLookup);
+                    const cached = riverPathCache.get(cacheKey);
 
                     for (const p of cached) {
                       poly.addLatLng([p.lat, p.lng]);
