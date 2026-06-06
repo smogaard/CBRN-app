@@ -440,7 +440,7 @@
         }
 
 
-      async function updateWeather() {
+        async function updateWeather() {
           const pos = marker.getLatLng();
           const url = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${pos.lat}&lon=${pos.lng}`;
 
@@ -1400,98 +1400,235 @@
         }
 
 
-      async function snapToNextRiver(current, currentSegmentId, lastPoint,  maxDist = 40, allowBacktracking = false) {
+        async function snapToNextRiver(current, currentSegmentId, lastPoint,  maxDist = 40, allowBacktracking = false) {
 
-        let best = null;
-        let bestScore = -Infinity;
-        let bestLine = null;
-        let bestIndex = -1;
-        let bestFeature = null;
+          let best = null;
+          let bestScore = -Infinity;
+          let bestLine = null;
+          let bestIndex = -1;
+          let bestFeature = null;
 
-        for (let key in loadedTiles) {
+          for (let key in loadedTiles) {
+            if (!key.startsWith("elvis")) continue;
+
+            const data = loadedTiles[key];
+            if (!data) continue;
+
+            for (let f of data.features) {
+
+              // ✅ ekskluder segmentet vi står på
+              if (f.properties.fid === currentSegmentId) continue;
+
+              const geom = f.geometry;
+              if (!geom) continue;
+
+              const lines =
+                geom.type === "LineString"
+                  ? [geom.coordinates]
+                  : geom.type === "MultiLineString"
+                  ? geom.coordinates
+                  : [];
+
+              // ✅ sjekk om segment ligger nær current (NODE-KOBLING MED TOLERANSE)
+              let closeEnough = false;
+
+            for (let lineCheck of lines) {
+              for (let i = 0; i < lineCheck.length - 1; i++) {
+
+                const p1 = [lineCheck[i][1], lineCheck[i][0]];
+                const p2 = [lineCheck[i+1][1], lineCheck[i+1][0]];
+
+                const d = distanceToSegment(current, p1, p2);
+
+                if (d < 12) {   // ✅ toleranse
+                  closeEnough = true;
+                break;
+                }
+                  }
+
+              if (closeEnough) break;
+            }
+
+            if (!closeEnough) continue;
+
+
+              // ✅ vurder kandidater i linja
+              for (let line of lines) {
+                for (let i = 0; i < line.length; i++) {
+
+                  const pt = [line[i][1], line[i][0]];
+
+                const transitionKey =
+                currentSegmentId + "→" + f.properties.fid;
+
+
+                if (failedTransitions.has(transitionKey)) {
+                  continue;
+                }
+
+
+                  const d = distMeters(current, pt);
+
+                const elevHere = await getElevationCached(current.lat, current.lng);
+                const elevNext = await getElevationCached(pt[0], pt[1]);
+
+                const elevDiff = elevNext - elevHere;
+
+
+                  // ❌ ikke samme punkt
+                  if (d < 3) continue;
+
+                  // ❌ for langt unna
+                  if (d > maxDist) continue;
+
+                  let directionScore = 0;
+
+                  if (lastPoint) {
+                    const dir = [
+                      current.lat - lastPoint[0],
+                      current.lng - lastPoint[1]
+                    ];
+
+                    const v = [
+                      pt[0] - current.lat,
+                      pt[1] - current.lng
+                    ];
+
+                    const len1 = Math.hypot(dir[0], dir[1]);
+                    const len2 = Math.hypot(v[0], v[1]);
+
+                    if (len1 > 0 && len2 > 0) {
+                      const dot =
+                        (dir[0] / len1) * (v[0] / len2) +
+                        (dir[1] / len1) * (v[1] / len2);
+
+                      // ❌ blokkér bakover
+
+
+                    if (dot < -0.9 && !allowBacktracking) {
+                      continue;
+                    }
+
+                      directionScore = dot;
+
+                    if (allowBacktracking) {
+                      directionScore += Math.abs(dot) * 20;
+                    }
+
+                    }
+                  }
+
+                  // ❌ ikke prioriter å gå tilbake til forrige punkt
+                  if (lastPoint) {
+                  const dPrev = distMeters(
+                    { lat: lastPoint[0], lng: lastPoint[1] },
+                    pt
+                  );
+
+                  if (dPrev < 5) {
+                    // ✅ tillat, men gi kraftig minus-score
+                    directionScore -= (5 - dPrev) * 0.1;
+                  }
+                }
+
+
+                  // ✅ score
+
+                let score = -d + directionScore * 50;
+
+                // ✅ NYTT: straff oppover
+                if (elevDiff > 0) {
+                  score -= elevDiff * 200;   // 🔥 viktig tuning
+                }
+
+                // ✅ bonus nedover
+                if (elevDiff < 0) {
+                  score += Math.abs(elevDiff) * 20;
+                }
+
+
+                  if (score > bestScore) {
+                    bestScore = score;
+                    best = pt;
+                    bestLine = line;
+                    bestIndex = i;
+                    bestFeature = f;
+                  }
+                }
+              }
+            }
+          }
+
+          if (!best) return null;
+
+
+        if (bestFeature.properties.fid === currentSegmentId) {
+            console.log("IGNORERER samme segment:", bestFeature.properties.fid);
+            return null;
+          }
+
+          return {
+            point: best,
+            line: bestLine,
+            index: bestIndex,
+            segmentId: bestFeature.properties.fid
+          };
+        }
+
+
+        async function findNextRiverSegment(currentPoint, prevPoint, segmentId){
+          let bestLine = null;
+          let bestIndex = -1;
+          let bestScore = -Infinity;
+
+          for (let key in loadedTiles) {
           if (!key.startsWith("elvis")) continue;
 
           const data = loadedTiles[key];
           if (!data) continue;
 
           for (let f of data.features) {
-
-            // ✅ ekskluder segmentet vi står på
-            if (f.properties.fid === currentSegmentId) continue;
-
             const geom = f.geometry;
             if (!geom) continue;
 
             const lines =
-              geom.type === "LineString"
-                ? [geom.coordinates]
-                : geom.type === "MultiLineString"
-                ? geom.coordinates
-                : [];
+            geom.type === "LineString"
+            ? [geom.coordinates]
+            : geom.type === "MultiLineString"
+            ? geom.coordinates
+            : [];
 
-            // ✅ sjekk om segment ligger nær current (NODE-KOBLING MED TOLERANSE)
-            let closeEnough = false;
-
-          for (let lineCheck of lines) {
-            for (let i = 0; i < lineCheck.length - 1; i++) {
-
-      	      const p1 = [lineCheck[i][1], lineCheck[i][0]];
-      	      const p2 = [lineCheck[i+1][1], lineCheck[i+1][0]];
-
-      	      const d = distanceToSegment(current, p1, p2);
-
-      	      if (d < 12) {   // ✅ toleranse
-      	        closeEnough = true;
-      	      break;
-      	      }
-                }
-
-            if (closeEnough) break;
-          }
-
-          if (!closeEnough) continue;
-
-
-            // ✅ vurder kandidater i linja
             for (let line of lines) {
               for (let i = 0; i < line.length; i++) {
-
                 const pt = [line[i][1], line[i][0]];
 
-              const transitionKey =
-              currentSegmentId + "→" + f.properties.fid;
+                // ✅ BLACKLIST check
+                const transitionKey =
+                  segmentId + "→" + f.properties.fid;
+
+                if (failedTransitions.has(transitionKey)) {
+                  continue;
+                }
 
 
-              if (failedTransitions.has(transitionKey)) {
-      	        continue;
-              }
+                const d = distMeters(
+                  { lat: currentPoint[0], lng: currentPoint[1] },
+                  pt
+                );
 
+                if (d > 25) continue; // må være koblet
 
-                const d = distMeters(current, pt);
+                // retning (unngå bakover)
+                if (prevPoint) {
 
-              const elevHere = await getElevationCached(current.lat, current.lng);
-              const elevNext = await getElevationCached(pt[0], pt[1]);
-
-              const elevDiff = elevNext - elevHere;
-
-
-                // ❌ ikke samme punkt
-                if (d < 3) continue;
-
-                // ❌ for langt unna
-                if (d > maxDist) continue;
-
-                let directionScore = 0;
-
-                if (lastPoint) {
                   const dir = [
-                    current.lat - lastPoint[0],
-                    current.lng - lastPoint[1]
+                    currentPoint[0] - prevPoint[0],
+                    currentPoint[1] - prevPoint[1]
                   ];
 
                   const v = [
-                    pt[0] - current.lat,
-                    pt[1] - current.lng
+                    pt[0] - currentPoint[0],
+                    pt[1] - currentPoint[1]
                   ];
 
                   const len1 = Math.hypot(dir[0], dir[1]);
@@ -1499,184 +1636,47 @@
 
                   if (len1 > 0 && len2 > 0) {
                     const dot =
-                      (dir[0] / len1) * (v[0] / len2) +
-                      (dir[1] / len1) * (v[1] / len2);
+                    (dir[0] / len1) * (v[0] / len2) +
+                    (dir[1] / len1) * (v[1] / len2);
 
-                    // ❌ blokkér bakover
+                    if (dot < -0.3) continue;
 
+                    const elev = await getElevationCached(pt[0], pt[1]);
+                    const here = await getElevationCached(currentPoint[0], currentPoint[1]);
 
-      		        if (dot < -0.9 && !allowBacktracking) {
-      		          continue;
-      		        }
+                    let score = 0;
 
-                    directionScore = dot;
+                    // retning (viktig)
+                    score += dot * 1000;
 
-      	          if (allowBacktracking) {
-      	            directionScore += Math.abs(dot) * 20;
-      	          }
+                    // høyde (kritisk)
+                    score -= (elev - here) * 50;
 
+                    if (score > bestScore) {
+                      bestScore = score;
+                      bestLine = line;
+                      bestIndex = i;
+                    }
                   }
-                }
 
-                // ❌ ikke prioriter å gå tilbake til forrige punkt
-              	if (lastPoint) {
-           		  const dPrev = distMeters(
-      	          { lat: lastPoint[0], lng: lastPoint[1] },
-      	          pt
-      	        );
-
-      	        if (dPrev < 5) {
-      	          // ✅ tillat, men gi kraftig minus-score
-      	          directionScore -= (5 - dPrev) * 0.1;
-      	        }
-      	      }
-
-
-                // ✅ score
-
-      	      let score = -d + directionScore * 50;
-
-      	      // ✅ NYTT: straff oppover
-      	      if (elevDiff > 0) {
-      	        score -= elevDiff * 200;   // 🔥 viktig tuning
-      	      }
-
-      	      // ✅ bonus nedover
-      	      if (elevDiff < 0) {
-      	        score += Math.abs(elevDiff) * 20;
-      	      }
-
-
-                if (score > bestScore) {
-                  bestScore = score;
-                  best = pt;
+                } else {
+                  // ✅ NYTT: første kryss – velg bare nærmeste punkt
                   bestLine = line;
                   bestIndex = i;
-                  bestFeature = f;
                 }
               }
             }
           }
         }
 
-        if (!best) return null;
-
-
-       if (bestFeature.properties.fid === currentSegmentId) {
-      	  console.log("IGNORERER samme segment:", bestFeature.properties.fid);
-      	  return null;
-      	}
-
-        return {
-          point: best,
-          line: bestLine,
-          index: bestIndex,
-          segmentId: bestFeature.properties.fid
-        };
-      }
-
-
-      async function findNextRiverSegment(currentPoint, prevPoint, segmentId) {
-        let bestLine = null;
-        let bestIndex = -1;
-        let bestScore = -Infinity;
-
-        for (let key in loadedTiles) {
-         if (!key.startsWith("elvis")) continue;
-
-         const data = loadedTiles[key];
-         if (!data) continue;
-
-         for (let f of data.features) {
-           const geom = f.geometry;
-           if (!geom) continue;
-
-           const lines =
-          geom.type === "LineString"
-          ? [geom.coordinates]
-          : geom.type === "MultiLineString"
-          ? geom.coordinates
-          : [];
-
-           for (let line of lines) {
-            for (let i = 0; i < line.length; i++) {
-              const pt = [line[i][1], line[i][0]];
-
-      	      // ✅ BLACKLIST check
-      	      const transitionKey =
-      				  segmentId + "→" + f.properties.fid;
-
-      	      if (failedTransitions.has(transitionKey)) {
-      	        continue;
-      	      }
-
-
-              const d = distMeters(
-      	        { lat: currentPoint[0], lng: currentPoint[1] },
-      	        pt
-              );
-
-              if (d > 25) continue; // må være koblet
-
-              // retning (unngå bakover)
-              if (prevPoint) {
-
-      	        const dir = [
-      	          currentPoint[0] - prevPoint[0],
-      	          currentPoint[1] - prevPoint[1]
-      	        ];
-
-      	        const v = [
-      	          pt[0] - currentPoint[0],
-      	          pt[1] - currentPoint[1]
-      	        ];
-
-      	        const len1 = Math.hypot(dir[0], dir[1]);
-      	        const len2 = Math.hypot(v[0], v[1]);
-
-      	        if (len1 > 0 && len2 > 0) {
-      	          const dot =
-      	          (dir[0] / len1) * (v[0] / len2) +
-      	          (dir[1] / len1) * (v[1] / len2);
-
-      	          if (dot < -0.3) continue;
-
-      	   	      const elev = await getElevationCached(pt[0], pt[1]);
-      		        const here = await getElevationCached(currentPoint[0], currentPoint[1]);
-
-      		        let score = 0;
-
-      		        // retning (viktig)
-      		        score += dot * 1000;
-
-      		        // høyde (kritisk)
-      		        score -= (elev - here) * 50;
-
-      		        if (score > bestScore) {
-      		          bestScore = score;
-      		          bestLine = line;
-      		          bestIndex = i;
-      		        }
-      	        }
-
-      	      } else {
-      	        // ✅ NYTT: første kryss – velg bare nærmeste punkt
-      	        bestLine = line;
-      	        bestIndex = i;
-      	      }
-            }
-          }
-         }
-       }
-
 
         if (!bestLine) return null;
 
-        return {
-         line: bestLine,
-         index: bestIndex
-        };
-      }
+          return {
+          line: bestLine,
+          index: bestIndex
+          };
+        }
 
 
        function isInWater(lat, lng) {
