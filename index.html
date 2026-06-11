@@ -2189,10 +2189,12 @@
               stepsSinceSnap++;
 
               const key = current.lat.toFixed(5) + "," + current.lng.toFixed(5);
+              
+              if (visited.has(key)) {
+                console.log("LOOP BRUTT");
+                break;
+              }
 
-              visited.add(
-                current.lat.toFixed(6) + "," + current.lng.toFixed(6),
-                );
 
               visited.add(key);
 
@@ -2202,10 +2204,6 @@
 
               if (i % 100 === 0) {
                 console.log("pos:", current.lat, current.lng);
-              }
-
-              if (i % 1 === 0) {
-                poly.addLatLng([current.lat, current.lng]);
               }
 
               if (i % 2 === 0){
@@ -2299,10 +2297,28 @@
                   const elevTarget = await getElevationCached(pt[0], pt[1]);
 
                   if (elevTarget !== undefined && elevCurrent !== undefined) {
+                   
                     if (elevTarget > elevCurrent + 5) {
                       console.log("DROP SNAP – uphill");
+
+                      // 🔥 SKYV FRA PUNKTET (KRITISK)
+                      const next = await getSteepestDirectionDEM(
+                        current.lat,
+                        current.lng,
+                        30
+                      );
+
+                      if (next) {
+                        current = next;
+                      }
+
+                      stepsSinceRiver = 0;
+                      onRiver = false;
+
                       continue;
                     }
+
+
                   }
 
 
@@ -2325,7 +2341,7 @@
 
                     poly.addLatLng([current.lat, current.lng]);
 
-                    break;
+                    continue;
                   }
 
                   // ✅ ellers: marker som ny
@@ -2355,8 +2371,6 @@
 
                   // ✅ legg til første punkt på elva og start cache
                   poly.addLatLng([current.lat, current.lng]);
-
-                  var cacheKey = segmentId + "_" + riverIndex;
 
                   if (!riverPathCache.has(cacheKey)) {
                     riverPathCache.set(cacheKey, []);
