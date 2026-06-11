@@ -1959,7 +1959,11 @@
 
           for (let i = 0; i < 200; i++) {
             const key = current[0].toFixed(5) + "," + current[1].toFixed(5);
-            if (visited.has(key)) break;
+            
+            if (visited.has(key) && !onRiver) {
+              console.log("LOOP BRUTT");
+              break;
+            }
 
             visited.add(key);
             path.push(current);
@@ -2190,10 +2194,12 @@
 
               const key = current.lat.toFixed(5) + "," + current.lng.toFixed(5);
               
-              if (visited.has(key)) {
+              
+              if (visited.has(key) && !onRiver) {
                 console.log("LOOP BRUTT");
                 break;
               }
+
 
 
               visited.add(key);
@@ -2219,9 +2225,15 @@
               const stream = findNearestStream(current);
 
               if (stream) {
+                
                 const d = distMeters(current, stream);
+                const isOnRiverPoint = d < 1;
 
-                console.log("Dist til nærmeste elv:", d);
+                console.log(
+                  "Dist til nærmeste elv:",
+                  isOnRiverPoint ? 0 : d
+                );
+
 
                 // ✅ DETEKTER OM VI STÅR FAST
                 if (d >= lastDist - 1) {
@@ -2237,7 +2249,7 @@
               if (stream) {
                 const distHere = distMeters(current, stream);
 
-                if (!onRiver && distHere < SNAP_DIST && stepsSinceRiver > 10) {
+                if (!onRiver && distHere < SNAP_DIST && distHere > 5 && stepsSinceRiver > 10) {
                   console.log("SNAPPET!");
 
                   let bestLine = null;
@@ -2410,8 +2422,9 @@
 
                 if (nearest) {
                   const d = distMeters(current, nearest);
+                  const isOnRiverPoint = d < 1;   // ✅ terskel: alt under 1 meter = samme punkt
 
-                  if (d < 40) {   // viktig terskel
+                  if (d < 40 && !isOnRiverPoint) {   // viktig terskel
 
                     const zCurrent = await getElevationCached(current.lat, current.lng);
                     const zNearest = await getElevationCached(nearest[0], nearest[1]);
