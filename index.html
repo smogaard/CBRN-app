@@ -1812,80 +1812,78 @@
                     uphill.push(c);
                   }
               }
-            }
+                  // ✅ bruk kun nedover hvis det finnes
+              const finalCandidates =
+                downhill.length > 0 ? downhill : candidates;
 
-            // ✅ bruk kun nedover hvis det finnes
-            const finalCandidates =
-              downhill.length > 0 ? downhill : candidates;
+              // ✅ bruk DEM kun lokalt
+              let best = null;
+              let bestScore = -Infinity;
 
-            // ✅ bruk DEM kun lokalt
-            let best = null;
-            let bestScore = -Infinity;
+              for (let c of finalCandidates) {
+                // unngå å gå tilbake til samme punkt
+                const pointKey = c[0].toFixed(6) + "," + c[1].toFixed(6);
 
-            for (let c of finalCandidates) {
-              // unngå å gå tilbake til samme punkt
-              const key = c[0].toFixed(6) + "," + c[1].toFixed(6);
+                // ✅ tillat å gå tilbake til forrige punkt (snupunkt)
+                let isLast =
+                  lastPoint &&
+                  Math.abs(c[0] - lastPoint[0]) < 0.00001 &&
+                  Math.abs(c[1] - lastPoint[1]) < 0.00001;
 
-              // ✅ tillat å gå tilbake til forrige punkt (snupunkt)
-              let isLast =
-                lastPoint &&
-                Math.abs(c[0] - lastPoint[0]) < 0.00001 &&
-                Math.abs(c[1] - lastPoint[1]) < 0.00001;
+                // ✅ bare blokkér hvis vi har vært der flere ganger
+                let count = 0;
 
-              // ✅ bare blokkér hvis vi har vært der flere ganger
-              let count = 0;
-
-              for (let v of visited) {
-                if (v === key) count++;
-              }
-
-              if (count > 2 && !isLast) continue;
-
-              const elev = await getElevationCached(c[0], c[1]);
-
-              const here = await getElevationCached(current[0], current[1]);
-              const diff = elev - here;
-
-              let score = -elev;
-
-              // ✅ STRAFF oppover kraftig
-              if (diff > 0) {
-                score -= diff * 200;
-              }
-
-              // 🔥 RETNING (NYTT)
-              if (lastPoint) {
-                const dir = [
-                  current[0] - lastPoint[0],
-                  current[1] - lastPoint[1],
-                ];
-
-                const v = [c[0] - current[0], c[1] - current[1]];
-
-                // ✅ normaliser
-                const len1 = Math.sqrt(dir[0] * dir[0] + dir[1] * dir[1]);
-                const len2 = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
-
-                let dot = 0;
-
-                if (len1 > 0 && len2 > 0) {
-                  dot =
-                    (dir[0] / len1) * (v[0] / len2) +
-                    (dir[1] / len1) * (v[1] / len2);
+                for (let v of visited) {
+                  if (v === pointKey) count++;
                 }
 
-                // ✅ blokkér kun ren bakover
-                if (dot < -0.7) continue;
+                if (count > 2 && !isLast) continue;
 
-                // ✅ kraftig retningsbias
-                score += dot * 200000;
-              }
+                const elev = await getElevationCached(c[0], c[1]);
 
-              if (score > globalScore) {
-                globalScore = score;
-                globalBest = c;
+                const diff = elev - here;
+
+                let score = -elev;
+
+                // ✅ STRAFF oppover kraftig
+                if (diff > 0) {
+                  score -= diff * 200;
+                }
+
+                // 🔥 RETNING (NYTT)
+                if (lastPoint) {
+                  const dir = [
+                    current[0] - lastPoint[0],
+                    current[1] - lastPoint[1],
+                  ];
+
+                  const v = [c[0] - current[0], c[1] - current[1]];
+
+                  // ✅ normaliser
+                  const len1 = Math.sqrt(dir[0] * dir[0] + dir[1] * dir[1]);
+                  const len2 = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+
+                  let dot = 0;
+
+                  if (len1 > 0 && len2 > 0) {
+                    dot =
+                      (dir[0] / len1) * (v[0] / len2) +
+                      (dir[1] / len1) * (v[1] / len2);
+                  }
+
+                  // ✅ blokkér kun ren bakover
+                  if (dot < -0.7) continue;
+
+                  // ✅ kraftig retningsbias
+                  score += dot * 200000;
+                }
+
+                if (score > globalScore) {
+                  globalScore = score;
+                  globalBest = c;
+                }
               }
-            }
+            } 
           }
         }
 
