@@ -1766,7 +1766,8 @@
               let closestDist = Infinity;
 
               for (let i = 0; i < line.length; i++) {
-                const pt = [line[i][1], line[i][0]];
+
+              const pt = [line[i][1], line[i][0]];
 
                 const d = distMeters({ lat: current[0], lng: current[1] }, pt);
 
@@ -1784,7 +1785,7 @@
               if (closestIndex > 0) {
                 candidates.push([
                   line[closestIndex - 1][1],
-                  line[closestIndex - 1][0],
+              line[closestIndex - 1][0],
                 ]);
               }
 
@@ -2210,7 +2211,7 @@
             if (stream) {
               
               const d = distMeters(current, stream);
-              const isOnRiverPoint = d < 1;
+              const isOnRiverPoint = d < 3;
 
               console.log(
                 "Dist til nærmeste elv:",
@@ -2417,7 +2418,7 @@
 
               if (nearest) {
                 const d = distMeters(current, nearest);
-                const isOnRiverPoint = d < 1;   // ✅ terskel: alt under 1 meter = samme punkt
+                const isOnRiverPoint = d < 3;   // ✅ terskel: alt under 3 meter = samme punkt
 
                 if (d < 40 && !isOnRiverPoint) {   // viktig terskel
 
@@ -2495,15 +2496,7 @@
 
           console.log("PATH LENGTH:", path.length);
 
-          if (path.length > 1) {
-            layers.push(
-              L.polyline(path, {
-                color: "#ff0000",
-                weight: 3,
-                opacity: 0.8,
-              }),
-            );
-          }
+          
         }
 
       }
