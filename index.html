@@ -1945,10 +1945,12 @@
         for (let i = 0; i < 200; i++) {
           const key = current[0].toFixed(5) + "," + current[1].toFixed(5);
           
-          if (visited.has(key) && !onRiver) {
+          
+          if (visited.has(key)) {
             console.log("LOOP BRUTT");
             break;
           }
+
 
           visited.add(key);
           path.push(current);
