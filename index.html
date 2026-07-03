@@ -1911,8 +1911,16 @@
                 : [];
 
             for (let line of lines) {
+                            
               for (let pt of line) {
                 const candidate = [pt[1], pt[0]];
+
+                if (
+                  Math.abs(candidate[0] - current[0]) < 0.000001 &&
+                  Math.abs(candidate[1] - current[1]) < 0.000001
+                ) {
+                  continue;
+                }
 
                 const d = distMeters(
                   { lat: current[0], lng: current[1] },
@@ -1924,6 +1932,7 @@
                   fallback = candidate;
                 }
               }
+
             }
           }
         }
@@ -1945,12 +1954,13 @@
 
         for (let i = 0; i < 200; i++) {
 
-          const key = current[0].toFixed(5) + "," + current[1].toFixed(5);
+          const key = current[0].toFixed(6) + "," + current[1].toFixed(6);
           
           
           
           if (visited.has(key)) {
             console.log("LOOP DETEKTERT:", key);
+            break;
           }
 
 
@@ -1971,6 +1981,11 @@
             break;
           }
           
+          if (samePoint(current, next)) {
+              console.error("SAMME PUNKT!", current, next);
+              break;
+          }
+
           
           console.log(
             "RIVER:",
