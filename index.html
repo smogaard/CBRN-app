@@ -1831,13 +1831,10 @@
                   Math.abs(c[1] - lastPoint[1]) < 0.00001;
 
                 // ✅ bare blokkér hvis vi har vært der flere ganger
-                let count = 0;
-
-                for (let v of visited) {
-                  if (v === pointKey) count++;
+                
+                if (visited.has(pointKey) && !isLast) {
+                  continue;
                 }
-
-                if (count > 2 && !isLast) continue;
 
                 const elev = await getElevationCached(c[0], c[1]);
 
@@ -1872,7 +1869,7 @@
                   }
 
                   // ✅ blokkér kun ren bakover
-                  if (dot < -0.7) continue;
+                  if (dot < -0.7 && !isLast) continue;
 
                   // ✅ kraftig retningsbias
                   score += dot * 200000;
@@ -1937,30 +1934,43 @@
 
 
 
+      
       async function followFullRiverDEM(startPoint) {
         let current = startPoint;
+        let lastPoint = null;
+
         const path = [];
         const visited = new Set();
+        const stack = [];
 
         for (let i = 0; i < 200; i++) {
+
           const key = current[0].toFixed(5) + "," + current[1].toFixed(5);
           
           
+          
           if (visited.has(key)) {
-            console.log("LOOP BRUTT");
-            break;
+            console.log("LOOP DETEKTERT:", key);
           }
+
 
 
           visited.add(key);
           path.push(current);
 
-          const next = await getNextDownstreamPoint(current, null, new Set());
+          
+          const next = await getNextDownstreamPoint(
+            current,
+            lastPoint,
+            visited
+          );
+
 
           if (!next) {
             console.log("STOP – ingen lavere punkt");
             break;
           }
+          
           
           console.log(
             "RIVER:",
@@ -1969,7 +1979,9 @@
             next
           );
 
+          lastPoint = current;
           current = next;
+
         }
         
         console.log(
