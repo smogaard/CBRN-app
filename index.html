@@ -1961,9 +1961,21 @@
             console.log("STOP – ingen lavere punkt");
             break;
           }
+          
+          console.log(
+            "RIVER:",
+            current,
+            "→",
+            next
+          );
 
           current = next;
         }
+        
+        console.log(
+          "River path len:",
+          path.length
+        );
 
         return path;
       }
@@ -2189,7 +2201,7 @@
 
             if (!onRiver) {
               path.push([current.lat, current.lng]);
-              poly.addLatLng([current.lat, current.lng]); 
+              poly.addLatLng([current.lat, current.lng]);
             }
 
             if (i % 100 === 0) {
