@@ -2096,9 +2096,20 @@
               )
             );
 
+            console.warn(
+              "BLACKLIST:",
+              branchKey(failed.from, failed.to)
+            );
+
+            const failedKey =
+              failed.to[0].toFixed(6) + "," +
+              failed.to[1].toFixed(6);
+
+            visited.delete(failedKey);
+            
             current = failed.from;
 
-            lastPoint = null;
+            lastPoint = failed.to;
 
             continue;
           }
