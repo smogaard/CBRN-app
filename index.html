@@ -2101,12 +2101,12 @@
               branchKey(failed.from, failed.to)
             );
 
-            const failedKey =
-              failed.to[0].toFixed(6) + "," +
-              failed.to[1].toFixed(6);
+            const fromKey =
+              failed.from[0].toFixed(6) + "," +
+              failed.from[1].toFixed(6);
 
-            visited.delete(failedKey);
-            
+            visited.delete(fromKey);
+
             current = failed.from;
 
             lastPoint = failed.to;
