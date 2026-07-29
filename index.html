@@ -1817,6 +1817,13 @@
               const finalCandidates =
                 downhill.length > 0 ? downhill : candidates;
 
+              console.log({
+                current,
+                lastPoint,
+                candidates,
+                finalCandidates
+              });
+
               // ✅ bruk DEM kun lokalt
               let best = null;
               let bestScore = -Infinity;
@@ -1885,6 +1892,22 @@
           }
         }
 
+        if (
+          globalBest &&
+          lastPoint &&
+          samePoint(globalBest, lastPoint)
+        ) {
+          console.warn(
+            "RETURNERER FORRIGE PUNKT"
+          );
+        }
+
+        console.log(
+          "BEST:",
+          globalBest,
+          "LAST:",
+          lastPoint
+        );
 
         if (globalBest) {
           return globalBest;
@@ -1937,6 +1960,8 @@
             }
           }
         }
+
+        
 
         return fallback;   // ✅ ALDRI null
 
