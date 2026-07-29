@@ -180,6 +180,7 @@
       //let processedRiverSegments = new Set();
       let riverEndings = new Map();
       let activeFlows = [];
+      let contaminatedWaterBodies = new Set();
 
       const tracedSegments = new Set();
 
@@ -1943,30 +1944,63 @@
 
 
 
-      
+      function samePoint(a, b, tolerance = 0.000001) {
+        return (
+          Math.abs(a[0] - b[0]) < tolerance &&
+          Math.abs(a[1] - b[1]) < tolerance
+        );
+      }
+
+
       async function followFullRiverDEM(startPoint) {
         let current = startPoint;
         let lastPoint = null;
 
         const path = [];
         const visited = new Set();
-        const stack = [];
+        
+        let totalDistance = 0;
+        const MAX_DISTANCE = 200000; // 200 km
 
-        for (let i = 0; i < 200; i++) {
-
+        while (totalDistance < MAX_DISTANCE) {
+                  
           const key = current[0].toFixed(6) + "," + current[1].toFixed(6);
           
-          
-          
+                              
           if (visited.has(key)) {
             console.log("LOOP DETEKTERT:", key);
             break;
           }
 
 
-
           visited.add(key);
           path.push(current);
+
+          if (isInWater(current[0], current[1])) {
+
+            contaminatedWaterBodies.add(
+              current[0].toFixed(5) +
+              "," +
+              current[1].toFixed(5)
+            );
+          }
+
+          const elev = await getElevationCached(
+            current[0],
+            current[1]
+          );
+
+          if (elev <= 1) {
+
+            console.log(
+              "HAVNIVÅ NÅDD:",
+              current,
+              "elev:",
+              elev
+            );
+
+            break;
+          }
 
           
           const next = await getNextDownstreamPoint(
@@ -1992,6 +2026,11 @@
             current,
             "→",
             next
+          );
+
+          totalDistance += distMeters(
+            { lat: lastPoint[0], lng: lastPoint[1] },
+            current
           );
 
           lastPoint = current;
@@ -2484,7 +2523,7 @@
             }
 
 
-            if (isInWater(current.lat, current.lng)) {
+            /*if (isInWater(current.lat, current.lng)) {
               console.log("TREFFER INNSJØ/KYST – STOPPER");
 
               // ✅ LAGRE SLUTTPUNKT FOR DENNE ELVA
@@ -2494,7 +2533,7 @@
               });
 
               break;
-            }
+            }*/
 
 
             if (i % 5 === 0) {
