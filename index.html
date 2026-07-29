@@ -1740,7 +1740,7 @@
 
 
 
-      async function getNextDownstreamPoint(current, lastPoint, visited) {
+      async function getNextDownstreamPoint(current, lastPoint, visited,branchFailures) {
         let globalBest = null;
         let globalScore = -Infinity;
 
@@ -1832,6 +1832,12 @@
                 // unngå å gå tilbake til samme punkt
                 const pointKey = c[0].toFixed(6) + "," + c[1].toFixed(6);
 
+                const bKey = branchKey(current, c);
+
+                if (branchFailures.has(bKey)) {
+                  continue;
+                }
+
                 // ✅ tillat å gå tilbake til forrige punkt (snupunkt)
                 let isLast =
                   lastPoint &&
@@ -1898,8 +1904,10 @@
           samePoint(globalBest, lastPoint)
         ) {
           console.warn(
-            "RETURNERER FORRIGE PUNKT"
+            "BLINDVEI OPPDAGET"
           );
+
+          return null;
         }
 
         console.log(
@@ -1963,10 +1971,9 @@
 
         
 
-        return fallback;   // ✅ ALDRI null
+        return null;
 
       }
-
 
 
       function samePoint(a, b, tolerance = 0.000001) {
@@ -1982,12 +1989,26 @@
       }
 
 
+      function branchKey(from, to) {
+        return (
+          from[0].toFixed(6) + "," +
+          from[1].toFixed(6) +
+          ">" +
+          to[0].toFixed(6) + "," +
+          to[1].toFixed(6)
+        );
+      }
+
+
       async function followFullRiverDEM(startPoint) {
         let current = startPoint;
         let lastPoint = null;
 
         const path = [];
         const visited = new Set();
+        
+        const branchFailures = new Set();
+        const pathStack = [];
         
         let totalDistance = 0;
         const MAX_DISTANCE = 200000; // 200 km
@@ -2047,13 +2068,39 @@
           const next = await getNextDownstreamPoint(
             current,
             lastPoint,
-            visited
+            visited,
+            branchFailures
           );
 
 
           if (!next) {
-            console.log("STOP – ingen lavere punkt");
-            break;
+
+            console.warn(
+              "BACKTRACK FRA:",
+              current
+            );
+
+            if (pathStack.length === 0) {
+              console.log(
+                "STOP – ingen flere valgmuligheter"
+              );
+              break;
+            }
+
+            const failed = pathStack.pop();
+
+            branchFailures.add(
+              branchKey(
+                failed.from,
+                failed.to
+              )
+            );
+
+            current = failed.from;
+
+            lastPoint = null;
+
+            continue;
           }
           
           if (samePoint(current, next)) {
@@ -2061,7 +2108,11 @@
               break;
           }
 
-          
+          pathStack.push({
+            from: current,
+            to: next
+          });
+
           console.log(
             "RIVER:",
             current,
