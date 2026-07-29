@@ -1945,6 +1945,11 @@
 
 
       function samePoint(a, b, tolerance = 0.000001) {
+
+        if (!a || !b) {
+          return false;
+        }
+
         return (
           Math.abs(a[0] - b[0]) < tolerance &&
           Math.abs(a[1] - b[1]) < tolerance
@@ -1963,7 +1968,18 @@
         const MAX_DISTANCE = 200000; // 200 km
 
         while (totalDistance < MAX_DISTANCE) {
+
+          if (!current) {
+            console.error("CURRENT ER NULL");
+            break;
+          }
                   
+          console.log(
+            "FOLLOW:",
+            "current=", current,
+            "last=", lastPoint
+          );
+  
           const key = current[0].toFixed(6) + "," + current[1].toFixed(6);
           
                               
@@ -2261,9 +2277,12 @@
               break;
             }
 
-
-
             visited.add(key);
+
+            console.log(
+              "ON RIVER:",
+              onRiver
+            );
 
             if (!onRiver) {
               path.push([current.lat, current.lng]);
