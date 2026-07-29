@@ -2045,8 +2045,8 @@
           );
 
           totalDistance += distMeters(
-            { lat: lastPoint[0], lng: lastPoint[1] },
-            current
+            { lat: current[0], lng: current[1] },
+            next
           );
 
           lastPoint = current;
@@ -2276,6 +2276,7 @@
               console.log("LOOP BRUTT");
               break;
             }
+
 
             visited.add(key);
 
