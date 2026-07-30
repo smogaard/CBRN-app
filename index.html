@@ -727,6 +727,16 @@
 
       function placeIncident(pos) {
         // Hent riktig tile med vassdragsinformasjon
+        
+        console.log(
+          "CACHE STATUS",
+          {
+            riverPathCache: riverPathCache.size,
+            riverEndings: riverEndings.size,
+            tracedSegments: tracedSegments.size,
+            failedTransitions: failedTransitions.size
+          }
+        );
 
         const points = [
           [pos.lat, pos.lng],
@@ -745,6 +755,11 @@
 
       //processedRiverSegments.clear();
       failedTransitions.clear();
+
+      riverPathCache.clear();
+      riverEndings.clear();
+      tracedSegments.clear();
+      contaminatedWaterBodies.clear();
 
         Promise.all(promises).then(() => {
           console.log("✅ Tiles ferdig lastet");
@@ -1898,15 +1913,8 @@
           }
         }
 
-        if (
-          globalBest &&
-          lastPoint &&
-          samePoint(globalBest, lastPoint)
-        ) {
-          console.warn(
-            "BLINDVEI OPPDAGET"
-          );
-
+        if (!globalBest) {
+          console.warn("INGEN GYLDIGE KANDIDATER");
           return null;
         }
 
